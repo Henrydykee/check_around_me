@@ -2,6 +2,7 @@ import 'package:check_around_me/features/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../navbar/check_navbar.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -145,7 +146,9 @@ class LoginScreen extends StatelessWidget {
                         fontSize: 16,
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const CheckNavbar()));
+                    },
                   ),
                 ),
 
