@@ -1,3 +1,4 @@
+import 'package:check_around_me/features/booking/booking_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../home/home_screen.dart';
@@ -35,7 +36,7 @@ class _CheckNavbarState extends State<CheckNavbar> {
         children:  [
           HomeScreen(),
           SearchScreen(),
-          Center(child: Text("Booking Screen")),
+          BookingsScreen(),
           Center(child: Text("Account Screen")),
         ],
       ),
