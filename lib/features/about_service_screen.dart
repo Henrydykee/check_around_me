@@ -2,8 +2,8 @@ import 'package:check_around_me/data/model/business_model.dart';
 import 'package:flutter/material.dart';
 
 class AboutServiceScreen extends StatefulWidget {
-  BusinessModel businessModel;
-   AboutServiceScreen({super.key , required this.businessModel});
+  final BusinessModel businessModel;
+  AboutServiceScreen({super.key, required this.businessModel});
 
   @override
   State<AboutServiceScreen> createState() => _AboutServiceScreenState();
@@ -12,7 +12,8 @@ class AboutServiceScreen extends StatefulWidget {
 class _AboutServiceScreenState extends State<AboutServiceScreen> {
   @override
   Widget build(BuildContext context) {
-      BusinessModel business = widget.businessModel;
+    BusinessModel business = widget.businessModel;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -20,28 +21,29 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
         title: const Text("Service Details"),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
 
-            /// NAME + RATING + CATEGORY
-             Text(
+            /// NAME + CATEGORY
+            Text(
               business.name.toString(),
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child:  Text(business.category.toString()),
+              child: Text(business.category.toString()),
             ),
             const SizedBox(height: 8),
+
+            /// RATING ROW
             Row(
               children: [
                 const Text(
@@ -61,14 +63,13 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                 ),
                 const SizedBox(width: 8),
                 const Text("(0 reviews)"),
-                const SizedBox(width: 8),
               ],
             ),
 
             const SizedBox(height: 12),
             Row(
-              children: [
-                const Text(
+              children: const [
+                Text(
                   "Open 09:00 - 18:00",
                   style: TextStyle(color: Colors.green),
                 ),
@@ -82,8 +83,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
               children: [
                 _actionButton(Icons.star_border, "Write a review"),
                 const SizedBox(height: 10),
-                _actionButton(Icons.request_quote, "Request Quote",
-                    filled: true),
+                _actionButton(Icons.request_quote, "Request Quote", filled: true),
                 const SizedBox(height: 10),
                 _actionButton(Icons.share, "Share"),
               ],
@@ -122,25 +122,15 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
               value: "NGN ${business.minPrice} - NGN ${business.maxPrice}",
             ),
             _amenityRow(
-              icon: Icons.wifi,
-              title: "Wifi",
-              value: "Available",
-            ),
-            _amenityRow(
               icon: Icons.credit_card,
               title: "Accepts",
-              value: "Cash, Bank Transfers",
-            ),
-            _amenityRow(
-              icon: Icons.local_parking,
-              title: "Parking",
-              value: "Garage Available",
+              value: business.paymentOptions.toString().replaceAll("[", "").replaceAll("]", ""),
             ),
 
             const SizedBox(height: 25),
             _sectionTitle("About the Business"),
             const SizedBox(height: 10),
-            const Text("My Business"),
+            Text(business.about.toString()),
 
             const SizedBox(height: 25),
             _sectionTitle("Location & Hours"),
@@ -157,16 +147,9 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("38 Asemota"),
+                      Text("${business.addressLine1}"),
                       const SizedBox(height: 15),
-                      _workingHoursRow("Mon", "09:00 - 18:00",
-                          isOpen: true),
-                      _workingHoursRow("Tue", "09:00 - 18:00"),
-                      _workingHoursRow("Wed", "09:00 - 18:00"),
-                      _workingHoursRow("Thu", "09:00 - 18:00"),
-                      _workingHoursRow("Fri", "Closed", closed: true),
-                      _workingHoursRow("Sat", "Closed", closed: true),
-                      _workingHoursRow("Sun", "Closed", closed: true),
+                      ..._buildWorkingHours(), // dynamically build working hours
                     ],
                   ),
                 ),
@@ -176,9 +159,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
             const SizedBox(height: 25),
             _sectionTitle("Reviews"),
             const SizedBox(height: 10),
-
             _reviewSummary(),
-
             const SizedBox(height: 40),
           ],
         ),
@@ -194,9 +175,10 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
     );
   }
 
+  /// ACTION BUTTONS
   Widget _actionButton(icon, text, {bool filled = false}) {
-    return SizedBox( // constrain height
-      height: 40, // adjust as needed
+    return SizedBox(
+      height: 40,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
@@ -253,9 +235,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
 
   /// AMENITY ROW
   Widget _amenityRow(
-      {required IconData icon,
-        required String title,
-        required String value}) {
+      {required IconData icon, required String title, required String value}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -265,8 +245,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
               Text(value),
             ],
           ),
@@ -277,7 +256,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
 
   /// WORKING HOURS ROW
   Widget _workingHoursRow(String day, String hours,
-      {bool isOpen = false, bool closed = false}) {
+      {required bool isOpen, bool closed = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -285,25 +264,50 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
           SizedBox(width: 40, child: Text(day)),
           if (isOpen)
             Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.green.shade100,
+                color: Colors.blue,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text("Open now",
-                  style: TextStyle(color: Colors.green, fontSize: 12)),
+              child: const Text(
+                "Open now",
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
             ),
           const SizedBox(width: 10),
           Text(
             hours,
-            style: TextStyle(
-              color: closed ? Colors.red : Colors.black,
-            ),
+            style: TextStyle(color: closed ? Colors.red : Colors.black),
           )
         ],
       ),
     );
+  }
+
+  /// Generate working hours dynamically
+  List<Widget> _buildWorkingHours() {
+    final now = DateTime.now();
+    final currentWeekday = now.weekday; // Monday = 1, Sunday = 7
+
+    const openHours = "09:00 - 18:00";
+    const closedHours = "Closed";
+
+    final weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    List<Widget> rows = [];
+
+    for (int i = 0; i < weekdays.length; i++) {
+      final day = weekdays[i];
+      if (i < 6) {
+        // Mon-Sat
+        final isOpenNow =
+            (i + 1) == currentWeekday && now.hour >= 9 && now.hour < 18;
+        rows.add(_workingHoursRow(day, openHours, isOpen: isOpenNow));
+      } else {
+        // Sunday
+        rows.add(_workingHoursRow(day, closedHours, isOpen: false, closed: true));
+      }
+    }
+    return rows;
   }
 
   /// REVIEW SUMMARY COMPONENT

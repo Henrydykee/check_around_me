@@ -2,7 +2,9 @@ import 'package:check_around_me/core/vm/provider_initilizers.dart';
 import 'package:check_around_me/core/vm/provider_view_model.dart';
 import 'package:check_around_me/vm/business_provider.dart';
 import 'package:flutter/material.dart';
+import '../core/utils/router.dart';
 import '../core/widget/service_card.dart';
+import 'about_service_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   final String filter;
@@ -137,7 +139,11 @@ class _SearchScreenState extends State<SearchScreen> {
                         category: b.category.toString(),
                         description: b.about.toString(),
                         rating: 0,
-                        onTap: () {},
+                        onTap: () {
+                          router.push(AboutServiceScreen(
+                            businessModel: b,
+                          ));
+                        },
                       );
                     },
                   ),
