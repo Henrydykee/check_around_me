@@ -17,6 +17,7 @@ class ApiClient {
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
+          "x-app-bypass" : "68312D38-5D2F-4375-89C7-BAE1D3478228"
         },
       ),
     );

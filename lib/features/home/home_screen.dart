@@ -1,155 +1,170 @@
+import 'package:check_around_me/features/about_service_screen.dart';
+import 'package:check_around_me/features/search_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../../core/utils/router.dart';
+import '../../core/vm/provider_initilizers.dart';
+import '../../core/vm/provider_view_model.dart';
 import '../../core/widget/category_chip_component.dart';
 import '../../core/widget/service_card.dart';
+import '../../vm/business_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        title: const Text("Home", style: TextStyle(fontSize: 20)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-
-            /// Browse by Category
-            Text("Browse by category",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 20)),
-            const SizedBox(height: 4),
-            const Center(
-              child: Text(
-                "Quickly find trusted local pros across popular services near you.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.black54, fontSize: 12),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            SizedBox(
-              height: 120,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
+    return ViewModelProvider(
+      viewModel: inject<BusinessProvider>(),
+      onModelReady: (vm) {
+        vm.getCategory();
+        vm.getBusinesses();
+      },
+      builder: (context, vm, child) {
+        return Scaffold(
+          backgroundColor: Colors.grey.shade50,
+          body: RefreshIndicator(
+            onRefresh: () async {
+              await vm.getCategory();
+              await vm.getBusinesses();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(), // required for RefreshIndicator
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CategoryChip(
-                    title: "Personal Trainer",
-                    subtitle: "Guided fitness",
-                    imageUrl:
-                    "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg",
-                    onTap: () {},
+                  const SizedBox(height: 70),
+                  const Text(
+                    "Browse by category",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black87),
                   ),
-                  const SizedBox(width: 20),
-                  CategoryChip(
-                    title: "Furniture",
-                    subtitle: "Carpentry",
-                    imageUrl:
-                    "https://images.pexels.com/photos/279645/pexels-photo-279645.jpeg",
-                    onTap: () {},
+                  const SizedBox(height: 8),
+                  Text(
+                    "Quickly find trusted local pros across popular services near you.",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14, height: 1.4),
                   ),
-                  const SizedBox(width: 20),
-                  CategoryChip(
-                    title: "Barbers",
-                    subtitle: "Hairdresser",
-                    imageUrl:
-                    "https://images.pexels.com/photos/3992878/pexels-photo-3992878.jpeg",
-                    onTap: () {},
+                  const SizedBox(height: 10),
+
+                  // Categories horizontal list
+                  SizedBox(
+                    height: 120,
+                    child: vm.categoryList.isEmpty
+                        ? Center(child: Text("No categories found"))
+                        : ListView.builder(
+                      itemCount: vm.categoryList.length,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (c, i) {
+                        final category = vm.categoryList[i];
+                        return CategoryChip(
+                          title: category.name ?? "",
+                          subtitle: category.description ?? "",
+                          imageUrl: category.imageUrl ?? "",
+                          onTap: () {
+                            router.push(SearchScreen(
+                              filter: category.name ?? "",
+                            ));
+                          },
+                        );
+                      },
+                    ),
                   ),
+
+                  const SizedBox(height: 20),
+                  Divider(),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Services Near You",
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          "View All",
+                          style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+                          const SizedBox(height: 12),
+                          Text(
+                            "No services found",
+                            style: TextStyle(fontSize: 16, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Check back soon for new services",
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  Divider(),
+                  const SizedBox(height: 20),
+
+                  /// Popular Near You Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Popular Near You",
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          "View All",
+                          style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Services horizontal list
+                  SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: vm.businessList.length > 5 ? 5 : vm.businessList.length,
+                      itemBuilder: (c,i){
+                        final business = vm.businessList[i];
+                       return ServiceCard(
+                          imageUrl: "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",
+                          title: business.name.toString(),
+                          location: business.addressLine1.toString(),
+                          category: business.category.toString(),
+                          description: business.about.toString(),
+                          rating: 0,
+                          onTap: () {
+                            router.push(AboutServiceScreen(
+                              businessModel: business,
+                            ));
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-
-            const SizedBox(height: 30),
-
-            /// Services Near You
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text("Services Near You",
-                    style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("View All", style: TextStyle(color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 30),
-                child: Text(
-                  "No services found",
-                  style:
-                  TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// Popular Near You
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text("Popular Near You",
-                    style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("View All", style: TextStyle(color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            SizedBox(
-              height: 300,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  ServiceCard(
-                    imageUrl:
-                    "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",
-                    title: "Demo Business",
-                    location: "Benin City, Edo",
-                    category: "IT Support",
-                    description: "My business",
-                    rating: 0,
-                    onTap: () {},
-                  ),
-                  ServiceCard(
-                    imageUrl:
-                    "https://images.pexels.com/photos/3184431/pexels-photo-3184431.jpeg",
-                    title: "Fola Consultants",
-                    location: "Lagos, Nigeria",
-                    category: "Consulting",
-                    description: "We help businesses grow",
-                    rating: 0,
-                    onTap: () {},
-                  ),
-                  ServiceCard(
-                    imageUrl:
-                    "https://images.pexels.com/photos/169190/pexels-photo-169190.jpeg",
-                    title: "Fav Events",
-                    location: "Benin City, Edo",
-                    category: "Event Planner",
-                    description: "We plan your events.",
-                    rating: 0,
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 50),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

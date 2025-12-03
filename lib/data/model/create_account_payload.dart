@@ -3,7 +3,6 @@ class CreateAccountModel {
   String? email;
   String? password;
   String? phone;
-  String? captchaToken;
   bool? login;
   String? referralCode;
   bool? optInMailingList;
@@ -13,7 +12,6 @@ class CreateAccountModel {
         this.email,
         this.password,
         this.phone,
-        this.captchaToken,
         this.login,
         this.referralCode,
         this.optInMailingList});
@@ -23,7 +21,6 @@ class CreateAccountModel {
     email = json['email'];
     password = json['password'];
     phone = json['phone'];
-    captchaToken = json['captchaToken'];
     login = json['login'];
     referralCode = json['referralCode'];
     optInMailingList = json['optInMailingList'];
@@ -35,7 +32,6 @@ class CreateAccountModel {
     data['email'] = this.email;
     data['password'] = this.password;
     data['phone'] = this.phone;
-    data['captchaToken'] = this.captchaToken;
     data['login'] = this.login;
     data['referralCode'] = this.referralCode;
     data['optInMailingList'] = this.optInMailingList;

@@ -9,32 +9,17 @@ class ServiceCard extends StatelessWidget {
   final double rating;
   final VoidCallback onTap;
 
-  const ServiceCard({
-    super.key,
-    required this.imageUrl,
-    required this.title,
-    required this.location,
-    required this.category,
-    required this.description,
-    required this.rating,
-    required this.onTap,
-  });
+  const ServiceCard({super.key, required this.imageUrl, required this.title, required this.location, required this.category, required this.description, required this.rating, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 240,
+      width: 250,
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: InkWell(
         onTap: onTap,
@@ -44,48 +29,37 @@ class ServiceCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                imageUrl,
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: Image.network(imageUrl, height: 120, width: double.infinity, fit: BoxFit.cover),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.location_on,
-                          size: 14, color: Colors.grey),
+                      const Icon(Icons.location_on, size: 14, color: Colors.grey),
                       const SizedBox(width: 4),
                       Expanded(
-                        child: Text(location,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12)),
+                        child: Text(location, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text(category,
-                      style: const TextStyle(
-                          color: Colors.blue,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    category,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     description,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style:
-                    const TextStyle(fontSize: 12, color: Colors.black54),
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -93,12 +67,14 @@ class ServiceCard extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onTap,
                       style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 40),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8))),
-                      child: const Text("Book Now"),
+                        backgroundColor: Colors.blue.shade900, // Dark blue
+                        foregroundColor: Colors.white, // White text
+                        minimumSize: const Size(0, 40),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text("Book Now", style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 
 import '../../core/services/api_client.dart';
 import '../../core/services/api_urls.dart';
 import '../../core/services/request_failure.dart';
 import '../model/business_details_response.dart';
+import '../model/business_model.dart';
 import '../model/category_response.dart';
 import '../model/create_booking_payload.dart';
 import '../model/create_business_payload.dart';
@@ -12,15 +15,25 @@ class BusinessRepository {
   final ApiClient _client;
   BusinessRepository(this._client);
 
-  Future<Either<RequestFailure, List<String>>> getBusinesses() async {
+  Future<Either<RequestFailure, List<BusinessModel>>> getBusinesses() async {
     try {
       final response = await _client.get(ApiUrls.listBusinesses);
-      final result = response.data;
+
+      // Make sure the response is decoded JSON
+      final data = response.data is String ? jsonDecode(response.data) : response.data;
+
+      final List businessList = data['businesses'] as List;
+
+      final result = businessList
+          .map((e) => BusinessModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+
       return Right(result);
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }
   }
+
 
   Future<Either<RequestFailure, BusinessDetailsResponse>> getBusinessById(String businessId) async {
     try {
@@ -52,15 +65,22 @@ class BusinessRepository {
     }
   }
 
-  Future<Either<RequestFailure, List<CatergoryResponse>>> getCategories() async {
+  Future<Either<RequestFailure, List<CategoryResponse>>> getCategories() async {
     try {
       final response = await _client.get(ApiUrls.getAllCategories);
-      final result = response.data.map((e) => CatergoryResponse.fromJson(e)).toList();
+      final rawData = response.data;
+      final decoded = rawData is String ? jsonDecode(rawData) : rawData;
+
+      final List dataList = decoded as List; // Top-level List from API
+      final result = dataList.map((e) => CategoryResponse.fromJson(e as Map<String, dynamic>)).toList();
+
       return Right(result);
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }
   }
+
+
 
   Future<Either<RequestFailure, String>> createBooking(CreateBookingPayload payload) async {
     try {

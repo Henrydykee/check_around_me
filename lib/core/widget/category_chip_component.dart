@@ -16,28 +16,31 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 35,
-            backgroundImage: NetworkImage(imageUrl),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: Colors.black54),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundImage: NetworkImage(imageUrl),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 2),
+            // Text(
+            //   subtitle,
+            //   textAlign: TextAlign.center,
+            //   style: const TextStyle(fontSize: 11, color: Colors.black54),
+            // ),
+          ],
+        ),
       ),
     );
   }

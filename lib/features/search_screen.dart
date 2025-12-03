@@ -1,8 +1,12 @@
+import 'package:check_around_me/core/vm/provider_initilizers.dart';
+import 'package:check_around_me/core/vm/provider_view_model.dart';
+import 'package:check_around_me/vm/business_provider.dart';
 import 'package:flutter/material.dart';
 import '../core/widget/service_card.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final String filter;
+  const SearchScreen({super.key, this.filter = ""});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -10,163 +14,140 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController controller = TextEditingController();
+  late String activeFilter;
 
-  final List<String> filters = [
-    "Cleaner",
-    "Electrician",
-    "Plumber",
-    "Mechanic",
-    "Painter",
-    "Photographer",
-    "Event Planner",
-    "Handyman",
-    "Barber",
-  ];
-
-  String activeFilter = "";
+  @override
+  void initState() {
+    super.initState();
+    activeFilter = widget.filter; // Initialize here
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: const Text("Search", style: TextStyle(fontSize: 20)),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
+    return ViewModelProvider(
+      viewModel: inject<BusinessProvider>(),
+      builder: (context, vm, child) {
+        // Filtered business list based on search text and active category
+        final filteredList = vm.businessList.where((b) {
+          final matchesCategory =
+              activeFilter.isEmpty || b.category.toString() == activeFilter;
+          final matchesSearch = controller.text.isEmpty ||
+              b.name.toString().toLowerCase().contains(controller.text.toLowerCase()) ||
+              b.about.toString().toLowerCase().contains(controller.text.toLowerCase());
+          return matchesCategory && matchesSearch;
+        }).toList();
 
-            /// Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Search for a service or provider...",
-                    icon: Icon(Icons.search),
+        return Scaffold(
+          backgroundColor: Colors.grey.shade50,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0.5,
+            automaticallyImplyLeading: widget.filter.isEmpty ? false : true,
+            centerTitle: true,
+            title: const Text("Search", style: TextStyle(fontSize: 20)),
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(40)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: controller,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Search for a service or provider...",
+                        icon: Icon(Icons.search),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
                   ),
-                  onChanged: (text) {
-                    setState(() {});
-                  },
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            /// Filter Chips
-            SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemBuilder: (context, i) {
-                  final f = filters[i];
-                  final isActive = f == activeFilter;
-
-                  return ChoiceChip(
-                    label: Text(f),
-                    selected: isActive,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    selectedColor: Colors.blue.shade100,
-                    onSelected: (_) {
-                      setState(() => activeFilter = isActive ? "" : f);
+                const SizedBox(height: 15),
+                SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemBuilder: (context, i) {
+                      final f = vm.categoryList[i];
+                      final isActive = f.name == activeFilter;
+                      return ChoiceChip(
+                        label: Text(
+                          f.name.toString(),
+                          style: TextStyle(
+                            color: isActive ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        selected: isActive,
+                        backgroundColor: Colors.white,
+                        selectedColor: Colors.black,
+                        side: const BorderSide(color: Colors.black),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        onSelected: (_) {
+                          setState(() =>
+                          activeFilter = isActive ? "" : f.name.toString());
+                        },
+                      );
                     },
-                  );
-                },
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemCount: filters.length,
-              ),
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemCount: vm.categoryList.length,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: filteredList.isEmpty
+                      ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Text(
+                        activeFilter.isEmpty
+                            ? "No services found."
+                            : "No services found for the category \"$activeFilter\"",
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  )
+                      : GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 0.59,
+                    ),
+                    itemCount: filteredList.length,
+                    itemBuilder: (context, index) {
+                      final b = filteredList[index];
+                      return ServiceCard(
+                        imageUrl:
+                        "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",
+                        title: b.name.toString(),
+                        location: b.addressLine1.toString(),
+                        category: b.category.toString(),
+                        description: b.about.toString(),
+                        rating: 0,
+                        onTap: () {},
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-
-            const SizedBox(height: 20),
-
-            /// Search Results
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isSmall =
-                      constraints.maxWidth < 380; // Tighter spacing on small phones
-
-                  return Wrap(
-                    runSpacing: 20,
-                    spacing: isSmall ? 12 : 16,
-                    children: [
-                      SizedBox(
-                        width: constraints.maxWidth / 2 - (isSmall ? 12 : 16),
-                        child: ServiceCard(
-                          imageUrl:
-                          "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",
-                          title: "Demo Business",
-                          location: "Benin City, Edo",
-                          category: "IT Support",
-                          description: "My Business",
-                          rating: 0,
-                          onTap: () {},
-                        ),
-                      ),
-                      SizedBox(
-                        width: constraints.maxWidth / 2 - (isSmall ? 12 : 16),
-                        child: ServiceCard(
-                          imageUrl:
-                          "https://images.pexels.com/photos/393149/pexels-photo-393149.jpeg",
-                          title: "G ba",
-                          location: "Twon Brass, Bayelsa",
-                          category: "Cleaner",
-                          description: "Checking acct",
-                          rating: 0,
-                          onTap: () {},
-                        ),
-                      ),
-                      SizedBox(
-                        width: constraints.maxWidth / 2 - (isSmall ? 12 : 16),
-                        child: ServiceCard(
-                          imageUrl:
-                          "https://cdn-icons-png.flaticon.com/512/2748/2748558.png",
-                          title: "Esther",
-                          location: "Alafia Crescent",
-                          category: "Barbers & Hairdresser",
-                          description: "I'm an hairstylist",
-                          rating: 0,
-                          onTap: () {},
-                        ),
-                      ),
-                      SizedBox(
-                        width: constraints.maxWidth / 2 - (isSmall ? 12 : 16),
-                        child: ServiceCard(
-                          imageUrl:
-                          "https://images.pexels.com/photos/585804/pexels-photo-585804.jpeg",
-                          title: "Link Cars",
-                          location: "Ifo, Ogun State",
-                          category: "Car Rentals",
-                          description: "Vehicle rentals",
-                          rating: 0,
-                          onTap: () {},
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

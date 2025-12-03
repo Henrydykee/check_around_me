@@ -1,15 +1,22 @@
+import 'package:check_around_me/data/model/business_model.dart';
 import 'package:flutter/material.dart';
 
-class AboutServiceScreen extends StatelessWidget {
-  const AboutServiceScreen({super.key});
+class AboutServiceScreen extends StatefulWidget {
+  BusinessModel businessModel;
+   AboutServiceScreen({super.key , required this.businessModel});
 
   @override
+  State<AboutServiceScreen> createState() => _AboutServiceScreenState();
+}
+
+class _AboutServiceScreenState extends State<AboutServiceScreen> {
+  @override
   Widget build(BuildContext context) {
+      BusinessModel business = widget.businessModel;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5,
         title: const Text("Service Details"),
       ),
       body: SingleChildScrollView(
@@ -20,12 +27,21 @@ class AboutServiceScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             /// NAME + RATING + CATEGORY
-            const Text(
-              "Demo Business",
+             Text(
+              business.name.toString(),
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-
+            Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child:  Text(business.category.toString()),
+            ),
+            const SizedBox(height: 8),
             Row(
               children: [
                 const Text(
@@ -45,17 +61,7 @@ class AboutServiceScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Text("(0 reviews)"),
-
                 const SizedBox(width: 8),
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text("IT Support / Computer Repair"),
-                ),
               ],
             ),
 
@@ -66,27 +72,19 @@ class AboutServiceScreen extends StatelessWidget {
                   "Open 09:00 - 18:00",
                   style: TextStyle(color: Colors.green),
                 ),
-                const SizedBox(width: 6),
-                InkWell(
-                  onTap: () {},
-                  child: const Text(
-                    "See hours",
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
               ],
             ),
 
             const SizedBox(height: 20),
 
             /// ACTION BUTTONS
-            Row(
+            Column(
               children: [
                 _actionButton(Icons.star_border, "Write a review"),
-                const SizedBox(width: 10),
+                const SizedBox(height: 10),
                 _actionButton(Icons.request_quote, "Request Quote",
                     filled: true),
-                const SizedBox(width: 10),
+                const SizedBox(height: 10),
                 _actionButton(Icons.share, "Share"),
               ],
             ),
@@ -112,7 +110,7 @@ class AboutServiceScreen extends StatelessWidget {
             const SizedBox(height: 25),
             _sectionTitle("Services Offered"),
             const SizedBox(height: 10),
-            _bulletGrid(["computer", "sales", "phone", "repair"]),
+            _bulletGrid(business.services!.map((e) => e).toList()),
 
             const SizedBox(height: 25),
             _sectionTitle("Amenities & Details"),
@@ -121,7 +119,7 @@ class AboutServiceScreen extends StatelessWidget {
             _amenityRow(
               icon: Icons.attach_money,
               title: "Price Range",
-              value: "NGN 1000 (Minimum Price)",
+              value: "NGN ${business.minPrice} - NGN ${business.maxPrice}",
             ),
             _amenityRow(
               icon: Icons.wifi,
@@ -196,9 +194,9 @@ class AboutServiceScreen extends StatelessWidget {
     );
   }
 
-  /// ACTION BUTTONS
   Widget _actionButton(icon, text, {bool filled = false}) {
-    return Expanded(
+    return SizedBox( // constrain height
+      height: 40, // adjust as needed
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
@@ -213,8 +211,8 @@ class AboutServiceScreen extends StatelessWidget {
             const SizedBox(width: 5),
             Text(
               text,
-              style:
-              TextStyle(color: filled ? Colors.white : Colors.black, fontSize: 14),
+              style: TextStyle(
+                  color: filled ? Colors.white : Colors.black, fontSize: 14),
             ),
           ],
         ),
