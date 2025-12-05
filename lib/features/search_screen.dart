@@ -31,11 +31,9 @@ class _SearchScreenState extends State<SearchScreen> {
       builder: (context, vm, child) {
         // Filtered business list based on search text and active category
         final filteredList = vm.businessList.where((b) {
-          final matchesCategory =
-              activeFilter.isEmpty || b.category.toString() == activeFilter;
-          final matchesSearch = controller.text.isEmpty ||
-              b.name.toString().toLowerCase().contains(controller.text.toLowerCase()) ||
-              b.about.toString().toLowerCase().contains(controller.text.toLowerCase());
+          final matchesCategory = activeFilter.isEmpty || b.category.toString() == activeFilter;
+          final matchesSearch =
+              controller.text.isEmpty || b.name.toString().toLowerCase().contains(controller.text.toLowerCase()) || b.about.toString().toLowerCase().contains(controller.text.toLowerCase());
           return matchesCategory && matchesSearch;
         }).toList();
 
@@ -55,17 +53,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(40)),
+                    decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(40)),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TextField(
                       controller: controller,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Search for a service or provider...",
-                        icon: Icon(Icons.search),
-                      ),
+                      decoration: const InputDecoration(border: InputBorder.none, hintText: "Search for a service or provider...", icon: Icon(Icons.search)),
                       onChanged: (_) => setState(() {}),
                     ),
                   ),
@@ -82,10 +74,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       return ChoiceChip(
                         label: Text(
                           f.name.toString(),
-                          style: TextStyle(
-                            color: isActive ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: TextStyle(color: isActive ? Colors.white : Colors.black, fontWeight: FontWeight.w500),
                         ),
                         selected: isActive,
                         backgroundColor: Colors.white,
@@ -93,8 +82,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         side: const BorderSide(color: Colors.black),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         onSelected: (_) {
-                          setState(() =>
-                          activeFilter = isActive ? "" : f.name.toString());
+                          setState(() => activeFilter = isActive ? "" : f.name.toString());
                         },
                       );
                     },
@@ -107,46 +95,34 @@ class _SearchScreenState extends State<SearchScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: filteredList.isEmpty
                       ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: Text(
-                        activeFilter.isEmpty
-                            ? "No services found."
-                            : "No services found for the category \"$activeFilter\"",
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  )
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: Text(
+                              activeFilter.isEmpty ? "No services found." : "No services found for the category \"$activeFilter\"",
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        )
                       : GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 20,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 0.59,
-                    ),
-                    itemCount: filteredList.length,
-                    itemBuilder: (context, index) {
-                      final b = filteredList[index];
-                      return ServiceCard(
-                        imageUrl:
-                        "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",
-                        title: b.name.toString(),
-                        location: b.addressLine1.toString(),
-                        category: b.category.toString(),
-                        description: b.about.toString(),
-                        rating: 0,
-                        onTap: () {
-                          router.push(AboutServiceScreen(
-                            businessModel: b,
-                          ));
-                        },
-                      );
-                    },
-                  ),
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 20, crossAxisSpacing: 16, childAspectRatio: 0.59),
+                          itemCount: filteredList.length,
+                          itemBuilder: (context, index) {
+                            final b = filteredList[index];
+                            return ServiceCard(
+                              imageUrl: "https://beta.checkaroundme.com/api/v1/businesses/${b.id}/images/primary",
+                              title: b.name.toString(),
+                              location: b.addressLine1.toString(),
+                              category: b.category.toString(),
+                              description: b.about.toString(),
+                              rating: 0,
+                              onTap: () {
+                                router.push(AboutServiceScreen(businessModel: b));
+                              },
+                            );
+                          },
+                        ),
                 ),
                 const SizedBox(height: 40),
               ],

@@ -1,6 +1,7 @@
 
 
 
+import 'package:check_around_me/data/model/user_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
@@ -41,8 +42,9 @@ class AuthRepository {
   Future<Either<RequestFailure, String>> login({required String email, required String password}) async {
     try {
       final response = await _client.post(ApiUrls.login, data: {"email": email, "password": password});
-
       final data = response.data;
+      String secret = data["secret"];
+      inject<LocalStorageService>().setString("secret", secret);
       final result = data.toString();
       return Right(result);
     } on DioException catch (e) {
@@ -64,16 +66,38 @@ class AuthRepository {
     }
   }
 
-  Future<Either<RequestFailure, String>> getCurrentUser() async {
+  Future<Either<RequestFailure, UserModel>> getCurrentUser() async {
     try {
       final response = await _client.get(ApiUrls.getCurrentUser);
-      final data = response.data;
-      final result = data.toString();
-      return Right(result);
-    } catch (e) {
+
+      // Response MUST be a Map
+      if (response.data is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid response format"));
+      }
+
+      final Map<String, dynamic> data = response.data;
+
+      // The API returns { "user": { ... } }
+      final userJson = data["user"];
+
+      if (userJson == null || userJson is! Map<String, dynamic>) {
+        return Left(RequestFailure("User data not found in response"));
+      }
+
+      // Convert JSON into model
+      final user = UserModel.fromJson(userJson);
+
+      // Save to local storage
+      await inject<LocalStorageService>().setJson("user", user.toJson());
+
+      return Right(user);
+
+    } catch (e, stack) {
       return Left(RequestFailure(e.toString()));
     }
   }
+
+
 
 
 

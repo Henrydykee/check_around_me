@@ -29,7 +29,20 @@ class ServiceCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(imageUrl, height: 120, width: double.infinity, fit: BoxFit.cover),
+              child: Image.network(
+                imageUrl,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    "assets/images/logo.png",
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.scaleDown,
+                  );
+                },
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12),

@@ -14,8 +14,9 @@ GetIt inject = GetIt.instance;
 
 class ProviderInitializer {
   static List<SingleChildWidget> getProviders() => [
-    ChangeNotifierProvider<AuthViewModel>(create: (_) => inject<AuthViewModel>()),
     ChangeNotifierProvider<BusinessProvider>(create: (_) => inject<BusinessProvider>()),
+    ChangeNotifierProvider<AuthProvider>(create: (_) => inject<AuthProvider>()),
+
   ];
 }
 
@@ -36,13 +37,4 @@ Future<void> setupLocator() async {
   inject.registerLazySingleton<BusinessProvider>(() => BusinessProvider(inject()));
 }
 
-class AuthViewModel extends ChangeNotifier {
-  String _userName = "";
 
-  String get userName => _userName;
-
-  void login(String name) {
-    _userName = name;
-    notifyListeners(); // notify listeners when state changes
-  }
-}

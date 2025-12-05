@@ -48,6 +48,8 @@ class BusinessProvider extends ChangeNotifier {
     error = null;
     notifyListeners();
     final result = await _repository.getBusinesses();
+    debugPrint("response");
+    debugPrint(result.toString());
     result.fold(
           (failure) {
         error = failure;

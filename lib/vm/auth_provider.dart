@@ -1,3 +1,4 @@
+import 'package:check_around_me/data/model/user_model.dart';
 import 'package:flutter/material.dart';
 import '../core/services/request_failure.dart';
 import '../data/model/create_account_payload.dart';
@@ -10,6 +11,7 @@ class AuthProvider extends ChangeNotifier {
 
   bool isLoading = false;
   RequestFailure? error;
+  UserModel? userModel;
 
   Future<void> register(CreateAccountModel create) async {
     isLoading = true;
@@ -46,5 +48,25 @@ class AuthProvider extends ChangeNotifier {
       },
     );
   }
+
+  Future<void> getCurrentUser() async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.getCurrentUser();
+    result.fold(
+          (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+      },
+          (success) {
+            userModel = success;
+        isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
 
 }

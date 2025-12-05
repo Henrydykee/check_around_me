@@ -1,6 +1,8 @@
 import 'package:check_around_me/features/about_service_screen.dart';
 import 'package:check_around_me/features/search_screen.dart';
+import 'package:check_around_me/vm/auth_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/utils/router.dart';
 import '../../core/vm/provider_initilizers.dart';
@@ -17,8 +19,12 @@ class HomeScreen extends StatelessWidget {
     return ViewModelProvider(
       viewModel: inject<BusinessProvider>(),
       onModelReady: (vm) {
-        vm.getCategory();
-        vm.getBusinesses();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          vm.getCategory();
+          vm.getBusinesses();
+          context.read<AuthProvider>().getCurrentUser();
+
+        });
       },
       builder: (context, vm, child) {
         return Scaffold(
@@ -27,6 +33,8 @@ class HomeScreen extends StatelessWidget {
             onRefresh: () async {
               await vm.getCategory();
               await vm.getBusinesses();
+              context.read<AuthProvider>().getCurrentUser();
+
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(), // required for RefreshIndicator
@@ -143,7 +151,7 @@ class HomeScreen extends StatelessWidget {
                       itemBuilder: (c,i){
                         final business = vm.businessList[i];
                        return ServiceCard(
-                          imageUrl: "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",
+                          imageUrl: "https://beta.checkaroundme.com/api/v1/businesses/${business.id}/images/primary",
                           title: business.name.toString(),
                           location: business.addressLine1.toString(),
                           category: business.category.toString(),

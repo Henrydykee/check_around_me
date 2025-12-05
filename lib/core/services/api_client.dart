@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import '../vm/provider_initilizers.dart';
 import 'api_urls.dart';
 import 'error_interceptor.dart';
@@ -17,19 +18,14 @@ class ApiClient {
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "x-app-bypass" : "68312D38-5D2F-4375-89C7-BAE1D3478228"
+          "x-app-bypass": "68312D38-5D2F-4375-89C7-BAE1D3478228",
+          // ❌ removed Authorization here (it must be runtime-injected)
         },
       ),
     );
 
     _dio.interceptors.addAll([
       _AuthInterceptor(_storage),
-      // LogInterceptor(
-      //   request: true,
-      //   requestBody: true,
-      //   responseBody: true,
-      //   error: true,
-      // ),
       ErrorInterceptor(),
     ]);
   }
@@ -70,7 +66,7 @@ class ApiClient {
 }
 
 ///
-/// 🔐 Handles automatic token injection
+/// 🔐 Auth Interceptor: attaches fresh tokens safely
 ///
 class _AuthInterceptor extends Interceptor {
   final LocalStorageService _storage;
@@ -79,12 +75,15 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final token = _storage.getString("secret");
+
     print("➡️ [REQUEST] ${options.method} ${options.uri}");
-    print("➡️ Body: ${options.data}");
-    final token = _storage.getString("token");
+    if (options.data != null) print("➡️ Body: ${options.data}");
+
     if (token != null && token.isNotEmpty) {
       options.headers["Authorization"] = "Bearer $token";
     }
+
     super.onRequest(options, handler);
   }
 
@@ -93,8 +92,15 @@ class _AuthInterceptor extends Interceptor {
     print("✅ [SUCCESS] ${response.requestOptions.method} ${response.requestOptions.uri}");
     print("✅ Status: ${response.statusCode}");
     print("✅ Data: ${response.data}");
+
     super.onResponse(response, handler);
   }
 
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    print("❌ [ERROR] ${err.requestOptions.method} ${err.requestOptions.uri}");
+    print("❌ Message: ${err.message}");
 
+    super.onError(err, handler);
+  }
 }

@@ -26,7 +26,7 @@ class BusinessModel {
   int? maxPrice;
   String? ownerId;
   String? referralCode;
-  Null? bankDetails;
+  BankDetails? bankDetails;
 
   BusinessModel(
       {this.id,
@@ -58,7 +58,7 @@ class BusinessModel {
         this.bankDetails});
 
   BusinessModel.fromJson(Map<String, dynamic> json) {
-    id = json['$id'];
+    id = json['\$id'];
     createdAt = json['$createdAt'];
     updatedAt = json['$updatedAt'];
     name = json['name'];
@@ -86,42 +86,11 @@ class BusinessModel {
     maxPrice = json['maxPrice'];
     ownerId = json['ownerId'];
     referralCode = json['referralCode'];
-    bankDetails = json['bankDetails'];
+    bankDetails = json['bankDetails'] != null
+        ? BankDetails.fromJson(json['bankDetails'])
+        : null;
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['$id'] = this.id;
-    data['$createdAt'] = this.createdAt;
-    data['$updatedAt'] = this.updatedAt;
-    data['name'] = this.name;
-    data['about'] = this.about;
-    data['category'] = this.category;
-    data['services'] = this.services;
-    if (this.servicesPrices != null) {
-      data['servicesPrices'] = this.servicesPrices!.toJson();
-    }
-    data['verificationStatus'] = this.verificationStatus;
-    data['rating'] = this.rating;
-    data['reviewCount'] = this.reviewCount;
-    data['addressLine1'] = this.addressLine1;
-    data['city'] = this.city;
-    data['state'] = this.state;
-    data['country'] = this.country;
-    data['postalCode'] = this.postalCode;
-    data['paymentOptions'] = this.paymentOptions;
-    data['coordinates'] = this.coordinates;
-    data['phoneCountryCode'] = this.phoneCountryCode;
-    data['phoneNumber'] = this.phoneNumber;
-    data['email'] = this.email;
-    data['status'] = this.status;
-    data['minPrice'] = this.minPrice;
-    data['maxPrice'] = this.maxPrice;
-    data['ownerId'] = this.ownerId;
-    data['referralCode'] = this.referralCode;
-    data['bankDetails'] = this.bankDetails;
-    return data;
-  }
 }
 
 class ServicesPrices {
@@ -160,3 +129,38 @@ class ServicesPrices {
     return data;
   }
 }
+
+class BankDetails {
+  String? bankName;
+  String? accountNumber;
+  String? accountName;
+  String? bankCode;
+  String? recipientCode;
+
+  BankDetails({
+    this.bankName,
+    this.accountNumber,
+    this.accountName,
+    this.bankCode,
+    this.recipientCode,
+  });
+
+  BankDetails.fromJson(Map<String, dynamic> json) {
+    bankName = json['bankName'];
+    accountNumber = json['accountNumber'];
+    accountName = json['accountName'];
+    bankCode = json['bankCode'];
+    recipientCode = json['recipientCode'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bankName': bankName,
+      'accountNumber': accountNumber,
+      'accountName': accountName,
+      'bankCode': bankCode,
+      'recipientCode': recipientCode,
+    };
+  }
+}
+
