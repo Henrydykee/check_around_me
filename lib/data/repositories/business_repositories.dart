@@ -85,10 +85,25 @@ class BusinessRepository {
   Future<Either<RequestFailure, String>> createBooking(CreateBookingPayload payload) async {
     try {
       final response = await _client.post(ApiUrls.createBooking, data: payload.toJson());
-      final result = response.data;
-      return Right(result);
+      if (response.data is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid response format"));
+      }
+      final Map<String, dynamic> data = response.data;
+      final bookingJson = data["booking"];
+      if (bookingJson == null || bookingJson is! Map<String, dynamic>) {
+        return Left(RequestFailure("Booking data not found in response"));
+      }
+      final bookingId = bookingJson["\$id"] as String?;
+      if (bookingId == null || bookingId.isEmpty) {
+        return Left(RequestFailure("Booking ID not found"));
+      }
+
+      return Right(bookingId);
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }
   }
+
+
+
 }

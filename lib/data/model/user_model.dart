@@ -11,7 +11,7 @@ class UserModel {
   bool? emailVerification;
   bool? phoneVerification;
   bool? mfa;
-  Prefs? prefs;
+  // Prefs? prefs;
   List<Targets>? targets;
   String? accessedAt;
 
@@ -28,12 +28,12 @@ class UserModel {
         this.emailVerification,
         this.phoneVerification,
         this.mfa,
-        this.prefs,
+        // this.prefs,
         this.targets,
         this.accessedAt});
 
   UserModel.fromJson(Map<String, dynamic> json) {
-    id = json['$id'];
+    id = json['\$id'];
     createdAt = json['$createdAt'];
     updatedAt = json['$updatedAt'];
     name = json['name'];
@@ -51,7 +51,7 @@ class UserModel {
     emailVerification = json['emailVerification'];
     phoneVerification = json['phoneVerification'];
     mfa = json['mfa'];
-    prefs = json['prefs'] != null ? new Prefs.fromJson(json['prefs']) : null;
+    // prefs = json['prefs'] != null ? new Prefs.fromJson(json['prefs']) : null;
     if (json['targets'] != null) {
       targets = <Targets>[];
       json['targets'].forEach((v) {
@@ -78,9 +78,9 @@ class UserModel {
     data['emailVerification'] = this.emailVerification;
     data['phoneVerification'] = this.phoneVerification;
     data['mfa'] = this.mfa;
-    if (this.prefs != null) {
-      data['prefs'] = this.prefs!.toJson();
-    }
+    // if (this.prefs != null) {
+    //   data['prefs'] = this.prefs!.toJson();
+    // }
     if (this.targets != null) {
       data['targets'] = this.targets!.map((v) => v.toJson()).toList();
     }
@@ -89,21 +89,21 @@ class UserModel {
   }
 }
 
-class Prefs {
-  List<String>? deviceTokens;
-
-  Prefs({this.deviceTokens});
-
-  Prefs.fromJson(Map<String, dynamic> json) {
-    deviceTokens = json['deviceTokens'].cast<String>();
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['deviceTokens'] = this.deviceTokens;
-    return data;
-  }
-}
+// class Prefs {
+//   List<String>? deviceTokens;
+//
+//   Prefs({this.deviceTokens});
+//
+//   Prefs.fromJson(Map<String, dynamic> json) {
+//     deviceTokens = json['deviceTokens'].cast<String>();
+//   }
+//
+//   Map<String, dynamic> toJson() {
+//     final Map<String, dynamic> data = new Map<String, dynamic>();
+//     data['deviceTokens'] = this.deviceTokens;
+//     return data;
+//   }
+// }
 
 class Targets {
   String? id;

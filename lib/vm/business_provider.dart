@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../core/services/request_failure.dart';
 import '../data/model/business_model.dart';
+import '../data/model/create_booking_payload.dart';
 
 class BusinessProvider extends ChangeNotifier {
   final BusinessRepository _repository;
@@ -60,6 +61,26 @@ class BusinessProvider extends ChangeNotifier {
             debugPrint("response");
             debugPrint(success.toString());
             businessList = success;
+        isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  Future<void> createBooking(CreateBookingPayload payload) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.createBooking(payload);
+    result.fold(
+          (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+      },
+          (success) {
+            debugPrint("response");
+            debugPrint(success.toString());
         isLoading = false;
         notifyListeners();
       },

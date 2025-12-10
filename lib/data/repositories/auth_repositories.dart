@@ -4,6 +4,7 @@
 import 'package:check_around_me/data/model/user_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../core/services/api_client.dart';
 import '../../core/services/api_urls.dart';
@@ -70,32 +71,29 @@ class AuthRepository {
     try {
       final response = await _client.get(ApiUrls.getCurrentUser);
 
-      // Response MUST be a Map
       if (response.data is! Map<String, dynamic>) {
         return Left(RequestFailure("Invalid response format"));
       }
 
       final Map<String, dynamic> data = response.data;
-
-      // The API returns { "user": { ... } }
       final userJson = data["user"];
 
       if (userJson == null || userJson is! Map<String, dynamic>) {
         return Left(RequestFailure("User data not found in response"));
       }
 
-      // Convert JSON into model
       final user = UserModel.fromJson(userJson);
 
-      // Save to local storage
       await inject<LocalStorageService>().setJson("user", user.toJson());
 
-      return Right(user);
+      await inject<LocalStorageService>().setString("userId", user.id.toString());
 
+      return Right(user);
     } catch (e, stack) {
       return Left(RequestFailure(e.toString()));
     }
   }
+
 
 
 

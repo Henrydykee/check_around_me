@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../account/account_screen.dart';
 import '../home/home_screen.dart';
-import '../search_screen.dart';
+import '../services/search_screen.dart';
 
 class CheckNavbar extends StatefulWidget {
   final int selectedTab;

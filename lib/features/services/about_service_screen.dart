@@ -1,5 +1,8 @@
+import 'package:check_around_me/core/utils/router.dart';
 import 'package:check_around_me/data/model/business_model.dart';
+import 'package:check_around_me/features/services/rquest_quote_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AboutServiceScreen extends StatefulWidget {
   final BusinessModel businessModel;
@@ -10,6 +13,13 @@ class AboutServiceScreen extends StatefulWidget {
 }
 
 class _AboutServiceScreenState extends State<AboutServiceScreen> {
+  final currencyFormatter = NumberFormat.currency(locale: "en_NG", symbol: "NGN ");
+
+  String _formatNum(num? value) {
+    if (value == null) return "";
+    return currencyFormatter.format(value);
+  }
+
   @override
   Widget build(BuildContext context) {
     BusinessModel business = widget.businessModel;
@@ -27,9 +37,9 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
           children: [
             const SizedBox(height: 10),
 
-            /// NAME + CATEGORY
+            // NAME + CATEGORY
             Text(
-              business.name.toString(),
+              business.name ?? "",
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -39,16 +49,16 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                 color: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(business.category.toString()),
+              child: Text(business.category ?? ""),
             ),
             const SizedBox(height: 8),
 
-            /// RATING ROW
+            // RATING ROW
             Row(
               children: [
-                const Text(
-                  "0.0",
-                  style: TextStyle(
+                Text(
+                  (business.rating?.toStringAsFixed(1)) ?? "0.0",
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.orange,
                     fontWeight: FontWeight.w600,
@@ -62,7 +72,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text("(0 reviews)"),
+                Text("(${business.reviewCount ?? 0} reviews)"),
               ],
             ),
 
@@ -78,14 +88,27 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
 
             const SizedBox(height: 20),
 
-            /// ACTION BUTTONS
+            // ACTION BUTTONS
             Column(
               children: [
-                _actionButton(Icons.star_border, "Write a review"),
+                _actionButton(
+                  Icons.star_border,
+                  "Write a review",
+                  onTap: () {},
+                ),
                 const SizedBox(height: 10),
-                _actionButton(Icons.request_quote, "Request Quote", filled: true),
+                _actionButton(
+                  Icons.request_quote,
+                  "Request Quote",
+                  filled: true,
+                  onTap: () => _showServicePricesDialog(business),
+                ),
                 const SizedBox(height: 10),
-                _actionButton(Icons.share, "Share"),
+                _actionButton(
+                  Icons.share,
+                  "Share",
+                  onTap: () {},
+                ),
               ],
             ),
 
@@ -99,10 +122,8 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _photoBox(
-                      "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg"),
-                  _photoBox(
-                      "https://images.pexels.com/photos/106344/pexels-photo-106344.jpeg"),
+                  _photoBox("https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg"),
+                  _photoBox("https://images.pexels.com/photos/106344/pexels-photo-106344.jpeg"),
                 ],
               ),
             ),
@@ -110,7 +131,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
             const SizedBox(height: 25),
             _sectionTitle("Services Offered"),
             const SizedBox(height: 10),
-            _bulletGrid(business.services!.map((e) => e).toList()),
+            _bulletGrid(business.services ?? []),
 
             const SizedBox(height: 25),
             _sectionTitle("Amenities & Details"),
@@ -119,18 +140,18 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
             _amenityRow(
               icon: Icons.attach_money,
               title: "Price Range",
-              value: "NGN ${business.minPrice} - NGN ${business.maxPrice}",
+              value: "${_formatNum(business.minPrice)} - ${_formatNum(business.maxPrice)}",
             ),
             _amenityRow(
               icon: Icons.credit_card,
               title: "Accepts",
-              value: business.paymentOptions.toString().replaceAll("[", "").replaceAll("]", ""),
+              value: (business.paymentOptions ?? []).join(", "),
             ),
 
             const SizedBox(height: 25),
             _sectionTitle("About the Business"),
             const SizedBox(height: 10),
-            Text(business.about.toString()),
+            Text(business.about ?? ""),
 
             const SizedBox(height: 25),
             _sectionTitle("Location & Hours"),
@@ -141,15 +162,13 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
               children: [
                 const Icon(Icons.location_on, size: 20),
                 const SizedBox(width: 8),
-
-                /// ADDRESS + HOURS
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("${business.addressLine1}"),
+                      Text(business.addressLine1 ?? ""),
                       const SizedBox(height: 15),
-                      ..._buildWorkingHours(), // dynamically build working hours
+                      ..._buildWorkingHours(),
                     ],
                   ),
                 ),
@@ -157,13 +176,62 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
             ),
 
             const SizedBox(height: 25),
-            _sectionTitle("Reviews"),
-            const SizedBox(height: 10),
-            _reviewSummary(),
-            const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  /// ====== REQUEST QUOTE DIALOG ======
+  void _showServicePricesDialog(BusinessModel business) {
+    final services = business.servicesPrices ?? {};
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text("Service Prices"),
+          content: services.isEmpty
+              ? const Text("No pricing information available.")
+              : SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              shrinkWrap: true,
+              children: services.entries.map((entry) {
+                return GestureDetector(
+                  onTap: () {
+                    router.push(RequestQuoteScreen(
+                      businessModel: business,
+                      services: entry.key,
+                    ));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text(entry.key)),
+                            Text(_formatNum(entry.value)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -175,34 +243,36 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
     );
   }
 
-  /// ACTION BUTTONS
-  Widget _actionButton(icon, text, {bool filled = false}) {
-    return SizedBox(
-      height: 40,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: filled ? Colors.blue : Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade400),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: filled ? Colors.white : Colors.black),
-            const SizedBox(width: 5),
-            Text(
-              text,
-              style: TextStyle(
-                  color: filled ? Colors.white : Colors.black, fontSize: 14),
-            ),
-          ],
+  /// ACTION BUTTON
+  Widget _actionButton(icon, text, {bool filled = false, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 40,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: filled ? Colors.blue.shade900 : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade400),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: filled ? Colors.white : Colors.black),
+              const SizedBox(width: 5),
+              Text(
+                text,
+                style: TextStyle(color: filled ? Colors.white : Colors.black, fontSize: 14),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// PHOTO SLIDER BOX
+  /// PHOTO BOX
   Widget _photoBox(String img) {
     return Container(
       width: 150,
@@ -214,7 +284,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
     );
   }
 
-  /// SERVICES OFFERED GRID
+  /// SERVICES GRID
   Widget _bulletGrid(List<String> items) {
     return Wrap(
       spacing: 20,
@@ -234,8 +304,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
   }
 
   /// AMENITY ROW
-  Widget _amenityRow(
-      {required IconData icon, required String title, required String value}) {
+  Widget _amenityRow({required IconData icon, required String title, required String value}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -255,8 +324,7 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
   }
 
   /// WORKING HOURS ROW
-  Widget _workingHoursRow(String day, String hours,
-      {required bool isOpen, bool closed = false}) {
+  Widget _workingHoursRow(String day, String hours, {required bool isOpen, bool closed = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -269,88 +337,34 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                 color: Colors.blue,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
-                "Open now",
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
+              child: const Text("Open now", style: TextStyle(color: Colors.white, fontSize: 12)),
             ),
           const SizedBox(width: 10),
-          Text(
-            hours,
-            style: TextStyle(color: closed ? Colors.red : Colors.black),
-          )
+          Text(hours, style: TextStyle(color: closed ? Colors.red : Colors.black)),
         ],
       ),
     );
   }
 
-  /// Generate working hours dynamically
+  /// BUILD WORKING HOURS
   List<Widget> _buildWorkingHours() {
     final now = DateTime.now();
-    final currentWeekday = now.weekday; // Monday = 1, Sunday = 7
-
+    final currentWeekday = now.weekday;
     const openHours = "09:00 - 18:00";
     const closedHours = "Closed";
-
     final weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     List<Widget> rows = [];
 
     for (int i = 0; i < weekdays.length; i++) {
       final day = weekdays[i];
       if (i < 6) {
-        // Mon-Sat
-        final isOpenNow =
-            (i + 1) == currentWeekday && now.hour >= 9 && now.hour < 18;
+        final isOpenNow = (i + 1) == currentWeekday && now.hour >= 9 && now.hour < 18;
         rows.add(_workingHoursRow(day, openHours, isOpen: isOpenNow));
       } else {
-        // Sunday
         rows.add(_workingHoursRow(day, closedHours, isOpen: false, closed: true));
       }
     }
     return rows;
   }
 
-  /// REVIEW SUMMARY COMPONENT
-  Widget _reviewSummary() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey.shade100,
-      ),
-      child: Column(
-        children: [
-          const Text(
-            "0.0",
-            style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-          ),
-          const Text("0 reviews"),
-          const SizedBox(height: 15),
-          Column(
-            children: List.generate(
-              5,
-                  (i) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Text("${5 - i} stars"),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -4,7 +4,6 @@ class CreateBookingPayload {
   String? type;
   String? serviceName;
   String? status;
-  String? metadata;
   UserDetails? userDetails;
 
   CreateBookingPayload(
@@ -13,7 +12,6 @@ class CreateBookingPayload {
         this.type,
         this.serviceName,
         this.status,
-        this.metadata,
         this.userDetails});
 
   CreateBookingPayload.fromJson(Map<String, dynamic> json) {
@@ -22,7 +20,6 @@ class CreateBookingPayload {
     type = json['type'];
     serviceName = json['serviceName'];
     status = json['status'];
-    metadata = json['metadata'];
     userDetails = json['userDetails'] != null
         ? new UserDetails.fromJson(json['userDetails'])
         : null;
@@ -35,7 +32,6 @@ class CreateBookingPayload {
     data['type'] = this.type;
     data['serviceName'] = this.serviceName;
     data['status'] = this.status;
-    data['metadata'] = this.metadata;
     if (this.userDetails != null) {
       data['userDetails'] = this.userDetails!.toJson();
     }

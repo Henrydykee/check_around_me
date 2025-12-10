@@ -1,5 +1,4 @@
-import 'package:check_around_me/features/about_service_screen.dart';
-import 'package:check_around_me/features/search_screen.dart';
+import 'package:check_around_me/features/services/about_service_screen.dart';
 import 'package:check_around_me/vm/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +9,7 @@ import '../../core/vm/provider_view_model.dart';
 import '../../core/widget/category_chip_component.dart';
 import '../../core/widget/service_card.dart';
 import '../../vm/business_provider.dart';
+import '../services/search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
