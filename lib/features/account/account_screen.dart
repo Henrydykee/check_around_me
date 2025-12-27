@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../core/services/local_storage.dart';
+import '../../core/utils/router.dart';
+import '../../core/vm/provider_initilizers.dart';
+import '../../data/model/user_model.dart';
+import 'billing_screen.dart';
+import 'edit_profile_screen.dart';
+import 'referrals_screen.dart';
+
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
 
@@ -8,6 +16,34 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() {
+    final userJson = inject<LocalStorageService>().getJson("user");
+    if (userJson != null) {
+      setState(() {
+        _user = UserModel.fromJson(userJson);
+      });
+    }
+  }
+
+  String _getInitials(String? name) {
+    if (name == null || name.isEmpty) return 'U';
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+    } else if (parts.length == 1) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'U';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,9 +58,9 @@ class _AccountScreenState extends State<AccountScreen> {
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.grey[200],
-                  child: const Text(
-                    'S',
-                    style: TextStyle(
+                  child: Text(
+                    _getInitials(_user?.name),
+                    style: const TextStyle(
                       fontSize: 24,
                       color: Colors.black87,
                       fontWeight: FontWeight.w500,
@@ -35,9 +71,9 @@ class _AccountScreenState extends State<AccountScreen> {
               Center(
                 child: Column(
                   children: [
-                    const Text(
-                      'string',
-                      style: TextStyle(
+                    Text(
+                      _user?.name ?? 'User',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -45,7 +81,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'test@yopmail.com',
+                      _user?.email ?? '',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -58,26 +94,19 @@ class _AccountScreenState extends State<AccountScreen> {
               const SizedBox(height: 30),
 
               // 3. Menu Options List
-              // "Overview" is selected by default based on image
-              _buildMenuOption(
-                icon: Icons.person_outline,
-                title: 'Overview',
-                isSelected: true,
-                onTap: () {},
-              ),
               _buildMenuOption(
                 icon: Icons.edit_outlined,
                 title: 'Edit Profile',
-                onTap: () {},
+                onTap: () async {
+                  final result = await router.push(const EditProfileScreen());
+                  if (result == true) {
+                    _loadUserData();
+                  }
+                },
               ),
               _buildMenuOption(
                 icon: Icons.business_center_outlined,
                 title: 'My Businesses',
-                onTap: () {},
-              ),
-              _buildMenuOption(
-                icon: Icons.settings_outlined,
-                title: 'App Settings',
                 onTap: () {},
               ),
               _buildMenuOption(
@@ -88,12 +117,16 @@ class _AccountScreenState extends State<AccountScreen> {
               _buildMenuOption(
                 icon: Icons.share_outlined,
                 title: 'Referrals',
-                onTap: () {},
+                onTap: () {
+                  router.push(const ReferralsScreen());
+                },
               ),
               _buildMenuOption(
                 icon: Icons.credit_card_outlined,
                 title: 'Billing',
-                onTap: () {},
+                onTap: () {
+                  router.push(const BillingScreen());
+                },
               ),
 
               // 4. Sign Out Button

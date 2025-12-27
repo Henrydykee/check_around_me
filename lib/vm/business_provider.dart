@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import '../core/services/request_failure.dart';
 import '../data/model/business_model.dart';
 import '../data/model/create_booking_payload.dart';
+import '../data/model/booking_list_response.dart';
 
 class BusinessProvider extends ChangeNotifier {
   final BusinessRepository _repository;
@@ -19,6 +20,8 @@ class BusinessProvider extends ChangeNotifier {
 
   List<CategoryResponse> categoryList = [];
   List<BusinessModel> businessList = [];
+  List<BookingModel> bookingList = [];
+  int? totalBookings;
 
 
 
@@ -81,6 +84,28 @@ class BusinessProvider extends ChangeNotifier {
           (success) {
             debugPrint("response");
             debugPrint(success.toString());
+        isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  Future<void> getMyBookings() async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.getMyBookings();
+    result.fold(
+          (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+      },
+          (success) {
+            debugPrint("response");
+            debugPrint(success.toString());
+            bookingList = success.bookings ?? [];
+            totalBookings = success.total;
         isLoading = false;
         notifyListeners();
       },

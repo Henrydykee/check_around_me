@@ -11,6 +11,7 @@ class UserModel {
   bool? emailVerification;
   bool? phoneVerification;
   bool? mfa;
+  String? referralCode;
   // Prefs? prefs;
   List<Targets>? targets;
   String? accessedAt;
@@ -23,14 +24,15 @@ class UserModel {
         this.registration,
         this.status,
         this.passwordUpdate,
-        this.email,
-        this.phone,
-        this.emailVerification,
-        this.phoneVerification,
-        this.mfa,
-        // this.prefs,
-        this.targets,
-        this.accessedAt});
+      this.email,
+      this.phone,
+      this.emailVerification,
+      this.phoneVerification,
+      this.mfa,
+      this.referralCode,
+      // this.prefs,
+      this.targets,
+      this.accessedAt});
 
   UserModel.fromJson(Map<String, dynamic> json) {
     id = json['\$id'];
@@ -51,6 +53,7 @@ class UserModel {
     emailVerification = json['emailVerification'];
     phoneVerification = json['phoneVerification'];
     mfa = json['mfa'];
+    referralCode = json['referralCode'];
     // prefs = json['prefs'] != null ? new Prefs.fromJson(json['prefs']) : null;
     if (json['targets'] != null) {
       targets = <Targets>[];
@@ -78,6 +81,7 @@ class UserModel {
     data['emailVerification'] = this.emailVerification;
     data['phoneVerification'] = this.phoneVerification;
     data['mfa'] = this.mfa;
+    data['referralCode'] = this.referralCode;
     // if (this.prefs != null) {
     //   data['prefs'] = this.prefs!.toJson();
     // }
@@ -111,7 +115,7 @@ class Targets {
   String? updatedAt;
   String? name;
   String? userId;
-  Null? providerId;
+  Null providerId;
   String? providerType;
   String? identifier;
   bool? expired;

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import '../vm/provider_initilizers.dart';
 import 'api_urls.dart';
 import 'error_interceptor.dart';
@@ -54,6 +53,14 @@ class ApiClient {
         Options? options,
       }) async {
     return _dio.put<T>(path, data: data, options: options);
+  }
+
+  Future<Response<T>> patch<T>(
+      String path, {
+        dynamic data,
+        Options? options,
+      }) async {
+    return _dio.patch<T>(path, data: data, options: options);
   }
 
   Future<Response<T>> delete<T>(

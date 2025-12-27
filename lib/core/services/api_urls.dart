@@ -1,5 +1,5 @@
 class ApiUrls {
-  static const String baseUrl = "https://beta.checkaroundme.com/api/v1";
+  static const String baseUrl = "https://www.checkaroundme.com/api/v1";
 
   // Auth endpoints
   static const String register = "$baseUrl/auth/register";

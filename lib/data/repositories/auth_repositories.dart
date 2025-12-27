@@ -4,7 +4,6 @@
 import 'package:check_around_me/data/model/user_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 
 import '../../core/services/api_client.dart';
 import '../../core/services/api_urls.dart';
@@ -89,8 +88,40 @@ class AuthRepository {
       await inject<LocalStorageService>().setString("userId", user.id.toString());
 
       return Right(user);
-    } catch (e, stack) {
+    } catch (e) {
       return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, UserModel>> updateUser({
+    required String fullName,
+    required String phone,
+    String? avatarUrl,
+  }) async {
+    try {
+      final payload = <String, dynamic>{
+        "fullName": fullName,
+        "phone": phone,
+      };
+      
+      if (avatarUrl != null && avatarUrl.isNotEmpty) {
+        payload["avatarUrl"] = avatarUrl;
+      }
+
+      final response = await _client.patch(ApiUrls.updateUser, data: payload);
+
+      // Check if update was successful (status 200-299)
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        // After successful update, fetch the complete user data
+        return await getCurrentUser();
+      } else {
+        return Left(RequestFailure("Update failed with status: ${response.statusCode}"));
+      }
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?["message"] ?? e.message ?? "Network error occurred";
+      return Left(RequestFailure(errorMsg));
+    } catch (e) {
+      return Left(RequestFailure("Unexpected error occurred: $e"));
     }
   }
 

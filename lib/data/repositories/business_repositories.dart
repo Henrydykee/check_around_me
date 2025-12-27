@@ -10,6 +10,7 @@ import '../model/business_model.dart';
 import '../model/category_response.dart';
 import '../model/create_booking_payload.dart';
 import '../model/create_business_payload.dart';
+import '../model/booking_list_response.dart';
 
 class BusinessRepository {
   final ApiClient _client;
@@ -104,6 +105,22 @@ class BusinessRepository {
     }
   }
 
-
+  Future<Either<RequestFailure, BookingListResponse>> getMyBookings() async {
+    try {
+      final response = await _client.get(ApiUrls.listMyBookings);
+      
+      // Make sure the response is decoded JSON
+      final data = response.data is String ? jsonDecode(response.data) : response.data;
+      
+      if (data is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid response format"));
+      }
+      
+      final result = BookingListResponse.fromJson(data);
+      return Right(result);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
 
 }

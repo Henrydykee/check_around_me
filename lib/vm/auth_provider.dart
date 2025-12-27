@@ -68,5 +68,34 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
+  Future<bool> updateUser({
+    required String fullName,
+    required String phone,
+    String? avatarUrl,
+  }) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.updateUser(
+      fullName: fullName,
+      phone: phone,
+      avatarUrl: avatarUrl,
+    );
+    return result.fold(
+          (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+        return false;
+      },
+          (success) {
+            userModel = success;
+        isLoading = false;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
+
 
 }

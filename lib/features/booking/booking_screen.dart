@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/vm/provider_initilizers.dart';
+import '../../core/vm/provider_view_model.dart';
+import '../../core/widget/loader_wrapper.dart';
+import '../../core/widget/error.dart';
+import '../../data/model/booking_list_response.dart';
+import '../../vm/business_provider.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -23,153 +31,313 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     super.dispose();
   }
 
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return 'N/A';
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('MMM d, h:mm a').format(date);
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  String _getDisplayStatus(String? status) {
+    if (status == null) return 'Unknown';
+    switch (status.toLowerCase()) {
+      case 'pending_provider_acceptance':
+        return 'Pending';
+      case 'accepted':
+      case 'in_progress':
+        return 'Active';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      case 'disputed':
+        return 'Disputed';
+      default:
+        return status.replaceAll('_', ' ').split(' ').map((word) => 
+          word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)
+        ).join(' ');
+    }
+  }
+
+  bool _hasAction(BookingModel booking) {
+    final status = booking.status?.toLowerCase() ?? '';
+    return status == 'pending_provider_acceptance' || 
+           status == 'accepted' || 
+           status == 'in_progress';
+  }
+
+  List<BookingModel> _getFilteredBookings(List<BookingModel> bookings) {
+    if (_selectedFilter == 'All Bookings') return bookings;
+    
+    return bookings.where((booking) {
+      final displayStatus = _getDisplayStatus(booking.status);
+      return displayStatus == _selectedFilter;
+    }).toList();
+  }
+
+  int _getActiveBookingsCount(List<BookingModel> bookings) {
+    return bookings.where((b) {
+      final status = b.status?.toLowerCase() ?? '';
+      return status == 'accepted' || status == 'in_progress';
+    }).length;
+  }
+
+  int _getActionRequiredCount(List<BookingModel> bookings) {
+    return bookings.where((b) {
+      final status = b.status?.toLowerCase() ?? '';
+      return status == 'pending_provider_acceptance';
+    }).length;
+  }
+
+  int _getCompletedCount(List<BookingModel> bookings) {
+    return bookings.where((b) {
+      final status = b.status?.toLowerCase() ?? '';
+      return status == 'completed';
+    }).length;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // 1. Header & Title
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Bookings',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Manage your bookings and appointments efficiently.',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 20),
-                    // Tabs
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        labelColor: Colors.blue[700],
-                        unselectedLabelColor: Colors.grey[600],
-                        indicatorColor: Colors.blue[700],
-                        labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-                        tabs: const [
-                          Tab(text: "My Bookings"),
-                          Tab(text: "Business Bookings"),
+    return ViewModelProvider(
+      viewModel: inject<BusinessProvider>(),
+      onModelReady: (vm) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          vm.getMyBookings();
+        });
+      },
+      builder: (context, vm, child) {
+        return LoaderWrapper(
+          isLoading: vm.isLoading,
+          view: Scaffold(
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              child: vm.error != null && vm.bookingList.isEmpty
+                  ? _buildErrorView(vm)
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        await vm.getMyBookings();
+                        if (vm.error != null) {
+                          showErrorDialog(context, "Error", vm.error!.message);
+                        }
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          // 1. Header & Title
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Bookings',
+                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Manage your bookings and appointments efficiently.',
+                                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Tabs
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                                    ),
+                                    child: TabBar(
+                                      controller: _tabController,
+                                      labelColor: Colors.blue[700],
+                                      unselectedLabelColor: Colors.grey[600],
+                                      indicatorColor: Colors.blue[700],
+                                      labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                                      tabs: const [
+                                        Tab(text: "My Bookings"),
+                                        Tab(text: "Business Bookings"),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // 2. Stats Cards (Horizontal Scroll)
+                          SliverToBoxAdapter(
+                            child: SizedBox(
+                              height: 120,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                children: [
+                                  _buildStatCard(
+                                    icon: Icons.access_time_filled,
+                                    color: Colors.blue,
+                                    title: "Active Bookings",
+                                    count: _getActiveBookingsCount(vm.bookingList).toString(),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _buildStatCard(
+                                    icon: Icons.error_outline,
+                                    color: Colors.orange,
+                                    title: "Action Required",
+                                    count: _getActionRequiredCount(vm.bookingList).toString(),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _buildStatCard(
+                                    icon: Icons.check_circle_outline,
+                                    color: Colors.green,
+                                    title: "Completed",
+                                    count: _getCompletedCount(vm.bookingList).toString(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // 3. Section Title & Filters
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'My Bookings',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        'All Bookings',
+                                        'Pending',
+                                        'Active',
+                                        'Completed',
+                                        'Cancelled'
+                                      ].map((filter) {
+                                        final isSelected = _selectedFilter == filter;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 8.0),
+                                          child: ActionChip(
+                                            label: Text(filter),
+                                            backgroundColor: isSelected ? Colors.blue[800] : Colors.grey[100],
+                                            labelStyle: TextStyle(
+                                              color: isSelected ? Colors.white : Colors.grey[700],
+                                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(20),
+                                              side: BorderSide.none,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _selectedFilter = filter;
+                                              });
+                                            },
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // 4. The Bookings List
+                          _buildBookingsList(vm.bookingList),
+
+                          // Bottom padding for scroll
+                          const SliverToBoxAdapter(child: SizedBox(height: 40)),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
             ),
+          ),
+        );
+      },
+    );
+  }
 
-            // 2. Stats Cards (Horizontal Scroll)
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 120, // Fixed height for the card row
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    _buildStatCard(
-                      icon: Icons.access_time_filled,
-                      color: Colors.blue,
-                      title: "Active Bookings",
-                      count: "0",
-                    ),
-                    const SizedBox(width: 12),
-                    _buildStatCard(
-                      icon: Icons.error_outline,
-                      color: Colors.orange,
-                      title: "Action Required",
-                      count: "1",
-                    ),
-                    const SizedBox(width: 12),
-                    _buildStatCard(
-                      icon: Icons.check_circle_outline,
-                      color: Colors.green,
-                      title: "Completed",
-                      count: "0",
-                    ),
-                  ],
-                ),
-              ),
+  Widget _buildErrorView(BusinessProvider vm) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading bookings',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800]),
             ),
-
-            // 3. Section Title & Filters
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'My Bookings',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          'All Bookings',
-                          'Pending',
-                          'Active',
-                          'Completed',
-                          'Cancelled'
-                        ].map((filter) {
-                          final isSelected = _selectedFilter == filter;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: ActionChip(
-                              label: Text(filter),
-                              backgroundColor: isSelected ? Colors.blue[800] : Colors.grey[100],
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey[700],
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide.none,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _selectedFilter = filter;
-                                });
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 8),
+            Text(
+              vm.error?.message ?? 'Unknown error occurred',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
-
-            // 4. The Bookings List
-            // Using SliverList ensures this renders efficiently as a list component
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    return _buildBookingItem(mockBookings[index]);
-                  },
-                  childCount: mockBookings.length,
-                ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                vm.getMyBookings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[700],
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
-
-            // Bottom padding for scroll
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookingsList(List<BookingModel> bookings) {
+    final filteredBookings = _getFilteredBookings(bookings);
+
+    if (filteredBookings.isEmpty) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'No bookings found',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800]),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _selectedFilter == 'All Bookings'
+                    ? 'You don\'t have any bookings yet'
+                    : 'No bookings match the selected filter',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            return _buildBookingItem(filteredBookings[index]);
+          },
+          childCount: filteredBookings.length,
         ),
       ),
     );
@@ -225,11 +393,12 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildBookingItem(Map<String, dynamic> booking) {
+  Widget _buildBookingItem(BookingModel booking) {
+    final displayStatus = _getDisplayStatus(booking.status);
     Color statusBg;
     Color statusText;
 
-    switch (booking['status']) {
+    switch (displayStatus) {
       case 'Pending':
         statusBg = const Color(0xFFFFF7E6); // Light Orange
         statusText = const Color(0xFFD97706); // Dark Orange
@@ -238,10 +407,18 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         statusBg = Colors.grey.shade200;
         statusText = Colors.grey.shade700;
         break;
+      case 'Completed':
+        statusBg = Colors.green.shade50;
+        statusText = Colors.green.shade700;
+        break;
       default:
         statusBg = Colors.blue.shade50;
         statusText = Colors.blue.shade700;
     }
+
+    final dateToShow = booking.scheduledAt ?? booking.createdAt ?? '';
+    final formattedDate = _formatDate(dateToShow);
+    final serviceName = booking.serviceName ?? 'Service';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -277,13 +454,18 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          booking['title'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        Expanded(
+                          child: Text(
+                            serviceName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
@@ -291,7 +473,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            booking['status'],
+                            displayStatus,
                             style: TextStyle(
                               color: statusText,
                               fontSize: 12,
@@ -302,27 +484,50 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.business, size: 14, color: Colors.grey[500]),
-                        const SizedBox(width: 4),
-                        Text(
-                          booking['company'],
-                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
+                    if (booking.userDetails?.name != null) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.person, size: 14, color: Colors.grey[500]),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              booking.userDetails!.name!,
+                              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                     Row(
                       children: [
                         Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
                         const SizedBox(width: 4),
-                        Text(
-                          booking['date'],
-                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        Expanded(
+                          child: Text(
+                            formattedDate,
+                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
+                    if (booking.amount != null && booking.amount! > 0) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.attach_money, size: 14, color: Colors.grey[500]),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${booking.currency ?? 'NGN'} ${booking.amount}',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -330,14 +535,16 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           ),
 
           // Action Button (Only if pending/active)
-          if (booking['hasAction'] == true) ...[
+          if (_hasAction(booking)) ...[
             const SizedBox(height: 16),
             const Divider(height: 1),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  // TODO: Implement cancel booking functionality
+                },
                 icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.white),
                 label: const Text("Cancel booking", style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
@@ -356,21 +563,3 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     );
   }
 }
-
-// Mock Data
-final List<Map<String, dynamic>> mockBookings = [
-  {
-    'title': 'Consultant',
-    'status': 'Pending',
-    'company': 'Fola consultants',
-    'date': 'Dec 3, 1:37 PM',
-    'hasAction': true,
-  },
-  {
-    'title': 'computer',
-    'status': 'Cancelled',
-    'company': 'Demo Business',
-    'date': 'Dec 3, 1:34 PM',
-    'hasAction': false,
-  },
-];
