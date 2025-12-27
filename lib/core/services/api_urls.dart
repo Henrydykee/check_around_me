@@ -1,54 +1,56 @@
+import '../utils/app_config.dart';
+
 class ApiUrls {
-  static const String baseUrl = "https://www.checkaroundme.com/api/v1";
+  static String get baseUrl => AppConfig.baseUrl;
 
   // Auth endpoints
-  static const String register = "$baseUrl/auth/register";
-  static const String login = "$baseUrl/auth/login";
-  static const String requestPasswordReset = "$baseUrl/auth/request-password-reset";
-  static const String getCurrentUser = "$baseUrl/auth/me";
-  static const String logout = "$baseUrl/auth/logout";
+  static String get register => "$baseUrl/auth/register";
+  static String get login => "$baseUrl/auth/login";
+  static String get requestPasswordReset => "$baseUrl/auth/request-password-reset";
+  static String get getCurrentUser => "$baseUrl/auth/me";
+  static String get logout => "$baseUrl/auth/logout";
   static String getUserById(String userId) => "$baseUrl/users/$userId";
   static String getUserProfileById(String userId) => "$baseUrl/users/$userId/profile";
-  static const String updateUser = "$baseUrl/users/me";
-  static const String getUserSettings = "$baseUrl/users/me/settings";
+  static String get updateUser => "$baseUrl/users/me";
+  static String get getUserSettings => "$baseUrl/users/me/settings";
 
   // Review endpoints
-  static const String createReview = "$baseUrl/reviews";
+  static String get createReview => "$baseUrl/reviews";
   static String getBusinessReviews(String businessId) => "$baseUrl/businesses/$businessId/reviews";
 
   // Message endpoints
-  static const String sendMessage = "$baseUrl/messages";
+  static String get sendMessage => "$baseUrl/messages";
   static String getConversationMessages(String conversationId) => "$baseUrl/conversations/$conversationId/messages";
 
   // Business endpoints
-  static const String createBusiness = "$baseUrl/businesses";
-  static const String listBusinesses = "$baseUrl/businesses";
+  static String get createBusiness => "$baseUrl/businesses";
+  static String get listBusinesses => "$baseUrl/businesses";
   static String getBusinessById(String businessId) => "$baseUrl/businesses/$businessId";
-  static const String listMyBusinesses = "$baseUrl/businesses/my";
+  static String get listMyBusinesses => "$baseUrl/businesses/my";
 
   // Category endpoints
-  static const String createCategory = "$baseUrl/categories";
-  static const String getAllCategories = "$baseUrl/categories";
+  static String get createCategory => "$baseUrl/categories";
+  static String get getAllCategories => "$baseUrl/categories";
   static String getCategoryById(String categoryId) => "$baseUrl/categories/$categoryId";
 
   // Conversation endpoints
-  static const String getOrCreateConversation = "$baseUrl/conversations";
+  static String get getOrCreateConversation => "$baseUrl/conversations";
   static String getUserConversations(String userId) => "$baseUrl/users/$userId/conversations";
 
   // Location endpoints
-  static const String getCountries = "$baseUrl/locations/countries";
+  static String get getCountries => "$baseUrl/locations/countries";
 
   // Notification endpoints
-  static const String getNotifications = "$baseUrl/notifications";
+  static String get getNotifications => "$baseUrl/notifications";
   static String markNotificationAsRead(String notificationId) => "$baseUrl/notifications/$notificationId/read";
-  static const String markAllNotificationsAsRead = "$baseUrl/notifications/read-all";
+  static String get markAllNotificationsAsRead => "$baseUrl/notifications/read-all";
 
   // Booking endpoints
-  static const String createBooking = "$baseUrl/bookings";
+  static String get createBooking => "$baseUrl/bookings";
   static String createBookingPayment(String bookingId) => "$baseUrl/bookings/$bookingId/payment";
   static String updateBookingStatus(String bookingId) => "$baseUrl/bookings/$bookingId/status";
   static String getBookingById(String bookingId) => "$baseUrl/bookings/$bookingId";
-  static const String listMyBookings = "$baseUrl/bookings/my";
+  static String get listMyBookings => "$baseUrl/bookings/my";
   static String listBusinessBookings(String businessId) => "$baseUrl/businesses/$businessId/bookings";
-  static const String verifyBookingPayment = "$baseUrl/bookings/verify-payment";
+  static String get verifyBookingPayment => "$baseUrl/bookings/verify-payment";
 }

@@ -1,6 +1,5 @@
 import 'package:check_around_me/data/repositories/business_repositories.dart';
 import 'package:check_around_me/vm/business_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
