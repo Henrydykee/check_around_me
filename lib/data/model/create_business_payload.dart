@@ -5,7 +5,7 @@ class CreateBusinessPayload {
   String? about;
   String? category;
   List<String>? services;
-  ServicesPrices? servicesPrices;
+  Map<String, int>? servicesPrices;
   String? addressLine1;
   String? city;
   String? state;
@@ -27,6 +27,8 @@ class CreateBusinessPayload {
   BankDetails? bankDetails;
   Hours? hours;
   List<Images>? images;
+  int? bookingFee;
+  String? bookingFeeType;
 
   CreateBusinessPayload(
       {this.name,
@@ -54,22 +56,24 @@ class CreateBusinessPayload {
         this.referralCode,
         this.bankDetails,
         this.hours,
-        this.images});
+        this.images,
+        this.bookingFee,
+        this.bookingFeeType});
 
   CreateBusinessPayload.fromJson(Map<String, dynamic> json) {
     name = json['name'];
     about = json['about'];
     category = json['category'];
-    services = json['services'].cast<String>();
+    services = json['services'] != null ? List<String>.from(json['services']) : null;
     servicesPrices = json['servicesPrices'] != null
-        ? new ServicesPrices.fromJson(json['servicesPrices'])
+        ? Map<String, int>.from(json['servicesPrices'].map((key, value) => MapEntry(key, value is int ? value : int.tryParse(value.toString()) ?? 0)))
         : null;
     addressLine1 = json['addressLine1'];
     city = json['city'];
     state = json['state'];
     country = json['country'];
     postalCode = json['postalCode'];
-    paymentOptions = json['paymentOptions'].cast<String>();
+    paymentOptions = json['paymentOptions'] != null ? List<String>.from(json['paymentOptions']) : null;
     coordinates = json['coordinates'];
     phoneCountryCode = json['phoneCountryCode'];
     phoneNumber = json['phoneNumber'];
@@ -92,6 +96,8 @@ class CreateBusinessPayload {
         images!.add(new Images.fromJson(v));
       });
     }
+    bookingFee = json['bookingFee'];
+    bookingFeeType = json['bookingFeeType'];
   }
 
   Map<String, dynamic> toJson() {
@@ -101,7 +107,7 @@ class CreateBusinessPayload {
     data['category'] = this.category;
     data['services'] = this.services;
     if (this.servicesPrices != null) {
-      data['servicesPrices'] = this.servicesPrices!.toJson();
+      data['servicesPrices'] = this.servicesPrices;
     }
     data['addressLine1'] = this.addressLine1;
     data['city'] = this.city;
@@ -130,29 +136,8 @@ class CreateBusinessPayload {
     if (this.images != null) {
       data['images'] = this.images!.map((v) => v.toJson()).toList();
     }
-    return data;
-  }
-}
-
-class ServicesPrices {
-  int? additionalProp1;
-  int? additionalProp2;
-  int? additionalProp3;
-
-  ServicesPrices(
-      {this.additionalProp1, this.additionalProp2, this.additionalProp3});
-
-  ServicesPrices.fromJson(Map<String, dynamic> json) {
-    additionalProp1 = json['additionalProp1'];
-    additionalProp2 = json['additionalProp2'];
-    additionalProp3 = json['additionalProp3'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['additionalProp1'] = this.additionalProp1;
-    data['additionalProp2'] = this.additionalProp2;
-    data['additionalProp3'] = this.additionalProp3;
+    data['bookingFee'] = this.bookingFee;
+    data['bookingFeeType'] = this.bookingFeeType;
     return data;
   }
 }

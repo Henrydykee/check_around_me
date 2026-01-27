@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/utils/app_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'features/onboarding/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppConfig.setEnvironment('dev');
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 //  await initializeApp();
   await setupLocator();

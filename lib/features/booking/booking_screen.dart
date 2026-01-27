@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/vm/provider_initilizers.dart';
 import '../../core/vm/provider_view_model.dart';
@@ -52,6 +53,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
       case 'completed':
         return 'Completed';
       case 'cancelled':
+      case 'cancelled_by_user':
         return 'Cancelled';
       case 'disputed':
         return 'Disputed';
@@ -62,11 +64,16 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     }
   }
 
-  bool _hasAction(BookingModel booking) {
+  bool _shouldShowCancelButton(BookingModel booking) {
     final status = booking.status?.toLowerCase() ?? '';
-    return status == 'pending_provider_acceptance' || 
-           status == 'accepted' || 
-           status == 'in_progress';
+    // Only show cancel button for accepted bookings, not for pending
+    return status == 'accepted' || status == 'in_progress';
+  }
+
+  bool _shouldShowPayButton(BookingModel booking) {
+    final status = booking.status?.toLowerCase() ?? '';
+    // Show pay button only for accepted bookings
+    return status == 'accepted';
   }
 
   List<BookingModel> _getFilteredBookings(List<BookingModel> bookings) {
@@ -403,6 +410,10 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         statusBg = const Color(0xFFFFF7E6); // Light Orange
         statusText = const Color(0xFFD97706); // Dark Orange
         break;
+      case 'Active':
+        statusBg = Colors.blue.shade50;
+        statusText = Colors.blue.shade700;
+        break;
       case 'Cancelled':
         statusBg = Colors.grey.shade200;
         statusText = Colors.grey.shade700;
@@ -519,8 +530,6 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.attach_money, size: 14, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
                           Text(
                             '${booking.currency ?? 'NGN'} ${booking.amount}',
                             style: TextStyle(color: Colors.grey[600], fontSize: 13),
@@ -534,30 +543,96 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
             ],
           ),
 
-          // Action Button (Only if pending/active)
-          if (_hasAction(booking)) ...[
+          // Action Buttons
+          if (_shouldShowPayButton(booking) || _shouldShowCancelButton(booking)) ...[
             const SizedBox(height: 16),
             const Divider(height: 1),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement cancel booking functionality
-                },
-                icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.white),
-                label: const Text("Cancel booking", style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626), // Red color
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            if (_shouldShowPayButton(booking)) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Implement pay booking fee functionality
+                    _handlePayBookingFee(context, booking);
+                  },
+                  icon: const Icon(Icons.payment, size: 18, color: Colors.white),
+                  label: const Text("Pay Booking Fee", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
-            )
+              if (_shouldShowCancelButton(booking)) const SizedBox(height: 8),
+            ],
+            if (_shouldShowCancelButton(booking))
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _handleCancelBooking(context, booking);
+                  },
+                  icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.white),
+                  label: const Text("Cancel booking", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626), // Red color
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
           ]
+        ],
+      ),
+    );
+  }
+
+  void _handlePayBookingFee(BuildContext context, BookingModel booking) {
+    // TODO: Implement payment flow
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Payment functionality coming soon')),
+    );
+  }
+
+  void _handleCancelBooking(BuildContext context, BookingModel booking) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Booking'),
+        content: const Text('Are you sure you want to cancel this booking?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              final vm = Provider.of<BusinessProvider>(context, listen: false);
+              await vm.cancelBooking(booking.id ?? '');
+              if (vm.error != null) {
+                if (context.mounted) {
+                  showErrorDialog(context, "Error", vm.error!.message);
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Booking cancelled successfully')),
+                  );
+                }
+                await vm.getMyBookings();
+              }
+            },
+            child: const Text('Yes, Cancel'),
+          ),
         ],
       ),
     );

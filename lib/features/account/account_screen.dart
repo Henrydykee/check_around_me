@@ -6,6 +6,7 @@ import '../../core/vm/provider_initilizers.dart';
 import '../../data/model/user_model.dart';
 import 'billing_screen.dart';
 import 'edit_profile_screen.dart';
+import 'my_businesses_screen.dart';
 import 'referrals_screen.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -107,7 +108,9 @@ class _AccountScreenState extends State<AccountScreen> {
               _buildMenuOption(
                 icon: Icons.business_center_outlined,
                 title: 'My Businesses',
-                onTap: () {},
+                onTap: () {
+                  router.push(const MyBusinessesScreen());
+                },
               ),
               _buildMenuOption(
                 icon: Icons.verified_user_outlined,

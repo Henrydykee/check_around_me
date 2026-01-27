@@ -23,7 +23,7 @@ class ApiUrls {
   static String getConversationMessages(String conversationId) => "$baseUrl/conversations/$conversationId/messages";
 
   // Business endpoints
-  static String get createBusiness => "$baseUrl/businesses";
+  static String get createBusiness => "${baseUrl.replaceAll('/v1', '')}/createBusiness";
   static String get listBusinesses => "$baseUrl/businesses";
   static String getBusinessById(String businessId) => "$baseUrl/businesses/$businessId";
   static String get listMyBusinesses => "$baseUrl/businesses/my";
@@ -49,8 +49,12 @@ class ApiUrls {
   static String get createBooking => "$baseUrl/bookings";
   static String createBookingPayment(String bookingId) => "$baseUrl/bookings/$bookingId/payment";
   static String updateBookingStatus(String bookingId) => "$baseUrl/bookings/$bookingId/status";
+  static String get updateBookingStatusLegacy => "${baseUrl.replaceAll('/v1', '')}/updateBookingStatus";
   static String getBookingById(String bookingId) => "$baseUrl/bookings/$bookingId";
   static String get listMyBookings => "$baseUrl/bookings/my";
   static String listBusinessBookings(String businessId) => "$baseUrl/businesses/$businessId/bookings";
   static String get verifyBookingPayment => "$baseUrl/bookings/verify-payment";
+
+  // Upload endpoints
+  static String get uploadImages => "${baseUrl.replaceAll('/v1', '')}/upload/images";
 }

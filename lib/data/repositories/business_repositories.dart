@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 
 import '../../core/services/api_client.dart';
 import '../../core/services/api_urls.dart';
@@ -48,7 +50,29 @@ class BusinessRepository {
 
   Future<Either<RequestFailure, String>> createBusiness(CreateBusinessPayload payload) async {
     try {
-      final response = await _client.post(ApiUrls.createBusiness, data: payload.toJson());
+      // Wrap payload in the required format
+      final jsonPayload = payload.toJson();
+      
+      // Handle referralCode - set to null if undefined/empty
+      final referralCode = jsonPayload['referralCode'];
+      final metaValues = <String, dynamic>{};
+      if (referralCode == null || referralCode == 'undefined' || referralCode.toString().isEmpty) {
+        metaValues['referralCode'] = ['undefined'];
+        jsonPayload['referralCode'] = null;
+      }
+      
+      // Wrap in the required structure
+      final wrappedPayload = {
+        "0": {
+          "json": jsonPayload,
+          "meta": {
+            "values": metaValues,
+            "v": 1
+          }
+        }
+      };
+      
+      final response = await _client.post(ApiUrls.createBusiness, data: wrappedPayload);
       final result = response.data;
       return Right(result);
     } catch (e) {
@@ -58,8 +82,16 @@ class BusinessRepository {
 
   Future<Either<RequestFailure, List<BusinessDetailsResponse>>> getMyBusinesses() async {
     try {
-      final response = await _client.get(ApiUrls.createBusiness);
-      final result = response.data.map((e) => BusinessDetailsResponse.fromJson(e)).toList();
+      final response = await _client.get(ApiUrls.listMyBusinesses);
+      final data = response.data is String ? jsonDecode(response.data) : response.data;
+      
+      if (data is! List) {
+        return Left(RequestFailure("Invalid response format: expected List"));
+      }
+      
+      final result = data
+          .map((e) => BusinessDetailsResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
       return Right(result);
     } catch (e) {
       return Left(RequestFailure(e.toString()));
@@ -118,6 +150,66 @@ class BusinessRepository {
       
       final result = BookingListResponse.fromJson(data);
       return Right(result);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, void>> cancelBooking(String bookingId, {String reason = ''}) async {
+    try {
+      // Payload structure as provided by user
+      final payload = {
+        "0": {
+          "json": {
+            "bookingId": bookingId,
+            "action": "user_cancel",
+            "reason": reason
+          }
+        }
+      };
+      
+      await _client.post(ApiUrls.updateBookingStatusLegacy, data: payload);
+      return const Right(null);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, List<Images>>> uploadImages(File imageFile, String userID) async {
+    try {
+      // Get filename from file path
+      final fileName = imageFile.path.split('/').last;
+      
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'images': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: fileName,
+        ),
+        'userID': userID,
+      });
+
+      // Make the request with multipart/form-data content type
+      final response = await _client.dio.post(
+        ApiUrls.uploadImages,
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
+      );
+
+      // Parse response - API returns a List directly
+      final data = response.data is String ? jsonDecode(response.data) : response.data;
+      
+      if (data is! List) {
+        return Left(RequestFailure("Invalid response format: expected List"));
+      }
+
+      final List<Images> images = data
+          .map((e) => Images.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      return Right(images);
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }
