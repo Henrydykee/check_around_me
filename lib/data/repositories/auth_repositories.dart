@@ -93,17 +93,41 @@ class AuthRepository {
     }
   }
 
+  Future<Either<RequestFailure, void>> logout() async {
+    try {
+      await _client.post(ApiUrls.logout);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(
+        RequestFailure(
+          e.response?.data?["message"] ?? e.message ?? "Logout failed",
+        ),
+      );
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
   Future<Either<RequestFailure, UserModel>> updateUser({
     required String fullName,
     required String phone,
     String? avatarUrl,
+    String? referralCode,
   }) async {
     try {
       final payload = <String, dynamic>{
         "fullName": fullName,
         "phone": phone,
+        "referralCode": referralCode ?? "",
+        "bankDetails": {
+          "bankName": "",
+          "accountNumber": "",
+          "accountName": "",
+          "bankCode": "",
+          "recipientCode": "",
+        },
       };
-      
+
       if (avatarUrl != null && avatarUrl.isNotEmpty) {
         payload["avatarUrl"] = avatarUrl;
       }

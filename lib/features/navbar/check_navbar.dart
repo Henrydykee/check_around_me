@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/features/booking/booking_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -43,8 +44,7 @@ class _CheckNavbarState extends State<CheckNavbar> {
       ),
       bottomNavigationBar: FABBottomAppBar(
         currentIndex: selectedTab,
-        notchedShape: const CircularNotchedRectangle(),
-        selectedColor: Colors.black,
+        selectedColor: AppTheme.primary,
         color: Colors.grey,
         onTabSelected: _onTabSelected,
         items: const [
@@ -53,8 +53,6 @@ class _CheckNavbarState extends State<CheckNavbar> {
           FABBottomAppBarItem(iconData: Icons.calendar_month_outlined, name: "Booking"),
           FABBottomAppBarItem(iconData: Icons.person_outline, name: "Account"),
         ],
-        centerItemText: '',
-        backgroundColor: Colors.white,
       ),
     );
   }
@@ -76,9 +74,7 @@ class FABBottomAppBar extends StatelessWidget {
   final Color color;
   final Color selectedColor;
   final Color? backgroundColor;
-  final NotchedShape notchedShape;
   final ValueChanged<int> onTabSelected;
-  final String centerItemText;
 
   const FABBottomAppBar({
     required this.items,
@@ -86,49 +82,64 @@ class FABBottomAppBar extends StatelessWidget {
     required this.color,
     required this.selectedColor,
     required this.onTabSelected,
-    required this.notchedShape,
-    required this.centerItemText,
     this.backgroundColor,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
-      shape: notchedShape,
-      color: backgroundColor ?? Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = index == currentIndex;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onTabSelected(index),
-              child: SizedBox(
-                height: 60,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      item.iconData,
-                      color: isSelected ? selectedColor : color,
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.white,
+        borderRadius: AppTheme.topSheetRadius,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final isSelected = index == currentIndex;
+              return Expanded(
+                child: InkWell(
+                  onTap: () => onTabSelected(index),
+                  borderRadius: AppTheme.borderRadiusMd,
+                  child: SizedBox(
+                    height: 56,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          item.iconData,
+                          color: isSelected ? selectedColor : color,
+                          size: 26,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.name,
+                          style: TextStyle(
+                            color: isSelected ? selectedColor : color,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.name,
-                      style: TextStyle(
-                        color: isSelected ? selectedColor : color,
-                        fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          );
-        }),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }

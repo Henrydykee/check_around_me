@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -119,7 +120,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         return LoaderWrapper(
           isLoading: vm.isLoading,
           view: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.surface,
             body: SafeArea(
               child: vm.error != null && vm.bookingList.isEmpty
                   ? _buildErrorView(vm)
@@ -141,25 +142,35 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                                 children: [
                                   const Text(
                                     'Bookings',
-                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppTheme.onSurface),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'Manage your bookings and appointments efficiently.',
-                                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                    style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
                                   ),
                                   const SizedBox(height: 20),
-                                  // Tabs
                                   Container(
                                     decoration: BoxDecoration(
-                                      border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                                      color: Colors.white,
+                                      borderRadius: AppTheme.borderRadiusLg,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: TabBar(
                                       controller: _tabController,
-                                      labelColor: Colors.blue[700],
-                                      unselectedLabelColor: Colors.grey[600],
-                                      indicatorColor: Colors.blue[700],
-                                      labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                                      labelColor: AppTheme.primary,
+                                      unselectedLabelColor: AppTheme.onSurfaceVariant,
+                                      indicatorColor: AppTheme.primary,
+                                      indicatorSize: TabBarIndicatorSize.tab,
+                                      labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                      unselectedLabelStyle: const TextStyle(fontSize: 14),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       tabs: const [
                                         Tab(text: "My Bookings"),
                                         Tab(text: "Business Bookings"),
@@ -174,27 +185,27 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                           // 2. Stats Cards (Horizontal Scroll)
                           SliverToBoxAdapter(
                             child: SizedBox(
-                              height: 120,
+                              height: 112,
                               child: ListView(
                                 scrollDirection: Axis.horizontal,
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
                                 children: [
                                   _buildStatCard(
-                                    icon: Icons.access_time_filled,
+                                    icon: Icons.access_time_filled_rounded,
                                     color: Colors.blue,
-                                    title: "Active Bookings",
+                                    title: "Active",
                                     count: _getActiveBookingsCount(vm.bookingList).toString(),
                                   ),
                                   const SizedBox(width: 12),
                                   _buildStatCard(
-                                    icon: Icons.error_outline,
+                                    icon: Icons.pending_actions_rounded,
                                     color: Colors.orange,
                                     title: "Action Required",
                                     count: _getActionRequiredCount(vm.bookingList).toString(),
                                   ),
                                   const SizedBox(width: 12),
                                   _buildStatCard(
-                                    icon: Icons.check_circle_outline,
+                                    icon: Icons.check_circle_outline_rounded,
                                     color: Colors.green,
                                     title: "Completed",
                                     count: _getCompletedCount(vm.bookingList).toString(),
@@ -213,7 +224,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                                 children: [
                                   const Text(
                                     'My Bookings',
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.onSurface),
                                   ),
                                   const SizedBox(height: 12),
                                   SingleChildScrollView(
@@ -231,13 +242,13 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                                           padding: const EdgeInsets.only(right: 8.0),
                                           child: ActionChip(
                                             label: Text(filter),
-                                            backgroundColor: isSelected ? Colors.blue[800] : Colors.grey[100],
+                                            backgroundColor: isSelected ? AppTheme.primary : AppTheme.surfaceVariant,
                                             labelStyle: TextStyle(
-                                              color: isSelected ? Colors.white : Colors.grey[700],
+                                              color: isSelected ? Colors.white : AppTheme.onSurfaceVariant,
                                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                                             ),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(20),
+                                              borderRadius: AppTheme.borderRadiusPill,
                                               side: BorderSide.none,
                                             ),
                                             onPressed: () {
@@ -277,28 +288,27 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            Icon(Icons.error_outline_rounded, size: 56, color: AppTheme.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(
               'Error loading bookings',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800]),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.onSurface),
             ),
             const SizedBox(height: 8),
             Text(
               vm.error?.message ?? 'Unknown error occurred',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                vm.getMyBookings();
-              },
+              onPressed: () => vm.getMyBookings(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[700],
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: AppTheme.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: AppTheme.borderRadiusSm),
               ),
-              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+              child: const Text('Retry', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -317,11 +327,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
+              Icon(Icons.event_busy_rounded, size: 56, color: AppTheme.onSurfaceVariant),
               const SizedBox(height: 16),
               Text(
                 'No bookings found',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800]),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.onSurface),
               ),
               const SizedBox(height: 8),
               Text(
@@ -329,7 +339,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                     ? 'You don\'t have any bookings yet'
                     : 'No bookings match the selected filter',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -357,42 +367,46 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     required String count,
   }) {
     return Container(
-      width: 150,
-      height: 200,
-      padding: const EdgeInsets.all(16),
+      width: 140,
+      height: 112,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[50], // Very light grey background like screenshot
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: AppTheme.borderRadiusLg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            overflow: TextOverflow.ellipsis,
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.shade50,
+              borderRadius: AppTheme.borderRadiusSm,
+            ),
+            child: Icon(icon, color: color.shade700, size: 20),
           ),
           const SizedBox(height: 4),
           Text(
+            title,
+            style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 11),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
             count,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: AppTheme.onSurface,
             ),
           ),
         ],
@@ -435,25 +449,29 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        color: Colors.white,
+        borderRadius: AppTheme.borderRadiusLg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon Box
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
+                  color: AppTheme.primaryLight,
+                  borderRadius: AppTheme.borderRadiusSm,
                 ),
-                child: const Icon(Icons.apartment, color: Colors.black54),
+                child: Icon(Icons.calendar_today_rounded, color: AppTheme.primary, size: 24),
               ),
               const SizedBox(width: 12),
 
@@ -478,10 +496,10 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: statusBg,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppTheme.borderRadiusSm,
                           ),
                           child: Text(
                             displayStatus,
@@ -498,12 +516,12 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                     if (booking.userDetails?.name != null) ...[
                       Row(
                         children: [
-                          Icon(Icons.person, size: 14, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
+                          Icon(Icons.person_outline_rounded, size: 14, color: AppTheme.onSurfaceVariant),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               booking.userDetails!.name!,
-                              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                              style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -514,12 +532,12 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                     ],
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
-                        const SizedBox(width: 4),
+                        Icon(Icons.schedule_rounded, size: 14, color: AppTheme.onSurfaceVariant),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             formattedDate,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -530,9 +548,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                       const SizedBox(height: 4),
                       Row(
                         children: [
+                          Icon(Icons.payments_outlined, size: 14, color: AppTheme.onSurfaceVariant),
+                          const SizedBox(width: 6),
                           Text(
                             '${booking.currency ?? 'NGN'} ${booking.amount}',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13),
                           ),
                         ],
                       ),
@@ -563,7 +583,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppTheme.borderRadiusSm,
                     ),
                   ),
                 ),
@@ -580,11 +600,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                   icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.white),
                   label: const Text("Cancel booking", style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDC2626), // Red color
+                    backgroundColor: const Color(0xFFDC2626),
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppTheme.borderRadiusSm,
                     ),
                   ),
                 ),
@@ -606,12 +626,13 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: AppTheme.borderRadiusLg),
         title: const Text('Cancel Booking'),
         content: const Text('Are you sure you want to cancel this booking?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('No'),
+            child: Text('No', style: TextStyle(color: AppTheme.onSurfaceVariant)),
           ),
           TextButton(
             onPressed: () async {
@@ -625,13 +646,16 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
               } else {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Booking cancelled successfully')),
+                    const SnackBar(
+                      content: Text('Booking cancelled successfully'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
                 }
                 await vm.getMyBookings();
               }
             },
-            child: const Text('Yes, Cancel'),
+            child: Text('Yes, Cancel', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

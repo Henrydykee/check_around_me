@@ -1,5 +1,5 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/core/utils/app_config.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -11,7 +11,7 @@ import 'features/onboarding/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AppConfig.setEnvironment('dev');
+  // Uses ENV from --dart-define or defaults to 'main' (prod URL). Use main_dev.dart for dev.
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 //  await initializeApp();
   await setupLocator();
@@ -44,9 +44,7 @@ class CheckAroundMe extends StatelessWidget {
             WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
           },
           child: MaterialApp(
-            theme: ThemeData(
-                fontFamily: "urbanist"
-            ),
+            theme: AppTheme.themeData,
             debugShowCheckedModeBanner: false,
             navigatorKey: router.navigatorKey,
             home:  SplashScreen(),

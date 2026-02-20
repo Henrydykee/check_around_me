@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 
+import 'core/theme/app_theme.dart';
 import 'core/utils/app_config.dart';
 import 'core/utils/router.dart';
 import 'core/vm/provider_initilizers.dart';
@@ -43,9 +43,7 @@ class CheckAroundMe extends StatelessWidget {
             WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
           },
           child: MaterialApp(
-            theme: ThemeData(
-                fontFamily: "urbanist"
-            ),
+            theme: AppTheme.themeData,
             debugShowCheckedModeBanner: false,
             navigatorKey: router.navigatorKey,
             home:  SplashScreen(),

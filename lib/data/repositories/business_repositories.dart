@@ -10,9 +10,12 @@ import '../../core/services/request_failure.dart';
 import '../model/business_details_response.dart';
 import '../model/business_model.dart';
 import '../model/category_response.dart';
+import '../model/popular_category_response.dart';
 import '../model/create_booking_payload.dart';
 import '../model/create_business_payload.dart';
 import '../model/booking_list_response.dart';
+import '../model/create_review_payload.dart';
+import '../model/review_model.dart';
 
 class BusinessRepository {
   final ApiClient _client;
@@ -84,11 +87,15 @@ class BusinessRepository {
     try {
       final response = await _client.get(ApiUrls.listMyBusinesses);
       final data = response.data is String ? jsonDecode(response.data) : response.data;
-      
-      if (data is! List) {
-        return Left(RequestFailure("Invalid response format: expected List"));
+
+      // 200 with null or non-List body = no businesses (empty list)
+      if (data == null) {
+        return const Right([]);
       }
-      
+      if (data is! List) {
+        return const Right([]);
+      }
+
       final result = data
           .map((e) => BusinessDetailsResponse.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -104,10 +111,49 @@ class BusinessRepository {
       final rawData = response.data;
       final decoded = rawData is String ? jsonDecode(rawData) : rawData;
 
-      final List dataList = decoded as List; // Top-level List from API
+      final List dataList = decoded as List;
       final result = dataList.map((e) => CategoryResponse.fromJson(e as Map<String, dynamic>)).toList();
 
       return Right(result);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, List<PopularCategoryResponse>>> getPopularCategories() async {
+    try {
+      final response = await _client.get(ApiUrls.getPopularCategories);
+      final rawData = response.data;
+      final decoded = rawData is String ? jsonDecode(rawData) : rawData;
+
+      final List dataList = decoded as List;
+      final result = dataList
+          .map((e) => PopularCategoryResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      return Right(result);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, ReviewsResponse>> getBusinessReviews(String businessId) async {
+    try {
+      final response = await _client.get(ApiUrls.getBusinessReviews(businessId));
+      final data = response.data is String ? jsonDecode(response.data) : response.data;
+      if (data is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid response format"));
+      }
+      return Right(ReviewsResponse.fromJson(data));
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, void>> createReview(CreateReviewPayload payload) async {
+    try {
+      await _client.post(ApiUrls.createReview, data: payload.toJson());
+      return const Right(null);
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }

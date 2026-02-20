@@ -31,6 +31,7 @@ class ApiUrls {
   // Category endpoints
   static String get createCategory => "$baseUrl/categories";
   static String get getAllCategories => "$baseUrl/categories";
+  static String get getPopularCategories => "$baseUrl/categories/popular";
   static String getCategoryById(String categoryId) => "$baseUrl/categories/$categoryId";
 
   // Conversation endpoints

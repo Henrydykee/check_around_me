@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/router.dart';
 import '../../../core/vm/provider_initilizers.dart';
 import '../../../core/vm/provider_view_model.dart';
+import '../../../data/model/country_state_city.dart';
 import '../../../vm/business_provider.dart';
+import 'city_search_screen.dart';
+import 'country_search_screen.dart';
 import 'services_prices_screen.dart';
+import 'state_search_screen.dart';
 
 class BasicInfoScreen extends StatefulWidget {
   const BasicInfoScreen({super.key});
@@ -14,6 +19,7 @@ class BasicInfoScreen extends StatefulWidget {
 }
 
 class _BasicInfoScreenState extends State<BasicInfoScreen> {
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _aboutController = TextEditingController();
@@ -25,7 +31,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   String? _selectedCountry;
   String? _selectedState;
   String? _selectedCity;
-  String? _selectedPhoneCountryCode = '+234';
+  CountryModel? _selectedCountryData;
+  StateModel? _selectedStateData;
+  String? _selectedPhoneCountryCode;
+  final List<String> _availablePhoneCodes = ['+234', '+233', '+254'];
   
   // Hours for each day
   final Map<String, Map<String, dynamic>> _hours = {
@@ -48,6 +57,11 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     super.dispose();
   }
 
+  initState() {
+    super.initState();
+    _selectedPhoneCountryCode = '+234';
+  }
+
   Future<void> _selectTime(BuildContext context, String day, String type) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -64,9 +78,21 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   }
 
   void _continue() {
-    if (_formKey.currentState!.validate()) {
-      // Navigate to next screen with data
-      router.push(ServicesPricesScreen(
+    if (!_formKey.currentState!.validate()) return;
+    final countryOk = _selectedCountry != null && _selectedCountry!.trim().isNotEmpty;
+    final stateOk = _selectedState != null && _selectedState!.trim().isNotEmpty;
+    final cityOk = _selectedCity != null && _selectedCity!.trim().isNotEmpty;
+    if (!countryOk || !stateOk || !cityOk) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select country, state, and city'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    // Navigate to next screen with data
+    router.push(ServicesPricesScreen(
         businessData: {
           'name': _nameController.text.trim(),
           'about': _aboutController.text.trim(),
@@ -82,7 +108,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         },
       ));
     }
-  }
+    
+    
+  
 
   @override
   Widget build(BuildContext context) {
@@ -93,33 +121,37 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           vm.getCategory();
         });
       },
-      builder: (context, vm, child) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.chevron_left, color: Colors.black, size: 30),
-              onPressed: () => router.pop(),
+      builder: (context, vm, child) => _buildScaffold(context,vm),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context , BusinessProvider vm) {
+    return Scaffold(
+      backgroundColor: AppTheme.surface,
+      appBar: AppBar(
+        backgroundColor: AppTheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: AppTheme.onSurface, size: 30),
+          onPressed: () => router.pop(),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Basic Information',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
             ),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Basic Information',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '(1/3)',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                ),
-              ],
+            const SizedBox(width: 8),
+            Text(
+              '(1/3)',
+              style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
             ),
-            centerTitle: true,
-          ),
-          body: SafeArea(
+          ],
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -127,8 +159,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppTheme.surfaceVariant,
+                    borderRadius: AppTheme.borderRadiusSm,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,142 +474,122 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                       ),
                       const SizedBox(height: 24),
                   
-                      // Country and State Row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'COUNTRY *',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                DropdownButtonFormField<String>(
-                                  value: _selectedCountry,
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    hintText: 'Select country',
-                                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: Colors.red, width: 1),
-                                    ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: Colors.red, width: 1.5),
-                                    ),
-                                  ),
-                                  items: const [
-                                    DropdownMenuItem(value: 'NG', child: Text('Nigeria')),
-                                    DropdownMenuItem(value: 'GH', child: Text('Ghana')),
-                                    DropdownMenuItem(value: 'KE', child: Text('Kenya')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedCountry = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Required';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'STATE *',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                DropdownButtonFormField<String>(
-                                  value: _selectedState,
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    hintText: 'Select state',
-                                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: Colors.red, width: 1),
-                                    ),
-                                    focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(color: Colors.red, width: 1.5),
-                                    ),
-                                  ),
-                                  items: const [
-                                    DropdownMenuItem(value: 'Lagos', child: Text('Lagos')),
-                                    DropdownMenuItem(value: 'Abuja', child: Text('Abuja')),
-                                    DropdownMenuItem(value: 'Kano', child: Text('Kano')),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedState = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Required';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                          ],
+                      // Country
+                      const Text(
+                        'COUNTRY *',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () async {
+                          final country = await router.push<CountryModel>(const CountrySearchScreen());
+                          if (country != null && mounted) {
+                            setState(() {
+                              _selectedCountry = country.name;
+                              _selectedCountryData = country;
+                              _selectedState = null;
+                              _selectedStateData = null;
+                              _selectedCity = null;
+                              // Automatically set dial code based on selected country
+                              if (country.phonecode != null && country.phonecode!.isNotEmpty) {
+                                final dialCode = '+${country.phonecode}';
+                                _selectedPhoneCountryCode = dialCode;
+                                // Add to available codes if not already present
+                                if (!_availablePhoneCodes.contains(dialCode)) {
+                                  _availablePhoneCodes.add(dialCode);
+                                }
+                              }
+                            });
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            hintText: 'Select country',
+                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                            ),
+                            suffixIcon: const Icon(Icons.chevron_right),
+                          ),
+                          child: Text(
+                            _selectedCountry ?? '',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _selectedCountry != null ? Colors.black87 : Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                   
+                      // State
+                      const Text(
+                        'STATE *',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: _selectedCountryData == null
+                            ? null
+                            : () async {
+                                final state = await router.push<StateModel>(
+                                  StateSearchScreen(states: _selectedCountryData!.states),
+                                );
+                                if (state != null && mounted) {
+                                  setState(() {
+                                    _selectedState = state.name;
+                                    _selectedStateData = state;
+                                    _selectedCity = null;
+                                  });
+                                }
+                              },
+                        borderRadius: BorderRadius.circular(8),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            hintText: 'Select state',
+                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                            ),
+                            suffixIcon: const Icon(Icons.chevron_right),
+                          ),
+                          child: Text(
+                            _selectedState ?? '',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _selectedState != null ? Colors.black87 : Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                       // City
                       const Text(
                         'CITY *',
@@ -589,52 +601,43 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        value: _selectedCity,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          hintText: 'Select city',
-                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                      InkWell(
+                        onTap: _selectedStateData == null
+                            ? null
+                            : () async {
+                                final city = await router.push<CityModel>(
+                                  CitySearchScreen(cities: _selectedStateData!.cities),
+                                );
+                                if (city != null && mounted) {
+                                  setState(() => _selectedCity = city.name);
+                                }
+                              },
+                        borderRadius: BorderRadius.circular(8),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            hintText: 'Select city',
+                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                            ),
+                            suffixIcon: const Icon(Icons.chevron_right),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.red, width: 1),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                          child: Text(
+                            _selectedCity ?? '',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _selectedCity != null ? Colors.black87 : Colors.grey.shade600,
+                            ),
                           ),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: 'Ikeja', child: Text('Ikeja')),
-                          DropdownMenuItem(value: 'Victoria Island', child: Text('Victoria Island')),
-                          DropdownMenuItem(value: 'Lekki', child: Text('Lekki')),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedCity = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'City is required';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 24),
                       
@@ -673,11 +676,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                   borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
                                 ),
                               ),
-                              items: const [
-                                DropdownMenuItem(value: '+234', child: Text('+234')),
-                                DropdownMenuItem(value: '+233', child: Text('+233')),
-                                DropdownMenuItem(value: '+254', child: Text('+254')),
-                              ],
+                              items: _availablePhoneCodes.map((code) {
+                                return DropdownMenuItem(
+                                  value: code,
+                                  child: Text(code),
+                                );
+                              }).toList(),
                               onChanged: (value) {
                                 setState(() {
                                   _selectedPhoneCountryCode = value;
@@ -899,9 +903,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                         height: 52,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade900,
+                            backgroundColor: AppTheme.primary,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: AppTheme.borderRadiusMd,
                             ),
                             elevation: 0,
                           ),
@@ -923,8 +927,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
             ),
           ),
         );
-      },
-    );
   }
 
   String _formatTime(String time) {

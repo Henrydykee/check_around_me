@@ -1,5 +1,5 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../core/utils/router.dart';
 import '../../core/vm/provider_initilizers.dart';
@@ -26,7 +26,7 @@ class MyBusinessesScreen extends StatelessWidget {
         return LoaderWrapper(
           isLoading: vm.isLoading,
           view: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.surface,
             appBar: AppBar(
               backgroundColor: Colors.white,
               elevation: 0,
@@ -48,7 +48,7 @@ class MyBusinessesScreen extends StatelessWidget {
               ),
               centerTitle: true,
             ),
-            body: vm.error != null
+            body: vm.error != null && vm.myBusinesses.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -126,17 +126,15 @@ class MyBusinessesScreen extends StatelessWidget {
                         ),
                       ),
             floatingActionButton: FloatingActionButton.extended(
-              onPressed: () {
-                router.push(const BasicInfoScreen());
+              onPressed: () async {
+                await router.push(const BasicInfoScreen());
+                if (context.mounted) vm.getMyBusinesses();
               },
-              backgroundColor:  const Color.fromARGB(255, 2, 32, 57),
+              backgroundColor: AppTheme.primary,
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
                 'Add Business',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               ),
             ),
           ),

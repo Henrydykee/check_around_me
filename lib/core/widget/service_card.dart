@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class ServiceCard extends StatelessWidget {
@@ -18,18 +19,24 @@ class ServiceCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 4, offset: const Offset(0, 2))],
+        borderRadius: AppTheme.borderRadiusLg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppTheme.borderRadiusLg,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
               child: Image.network(
                 imageUrl,
                 height: 120,
@@ -82,12 +89,12 @@ class ServiceCard extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onTap,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade900, // Dark blue
-                        foregroundColor: Colors.white, // White text
-                        minimumSize: const Size(0, 40),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(0, 42),
+                        shape: RoundedRectangleBorder(borderRadius: AppTheme.borderRadiusSm),
                       ),
-                      child: const Text("Book Now", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text("Book Now", style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],

@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../auth/presentation/login_screen.dart';
 
@@ -26,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.surface,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

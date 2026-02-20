@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:check_around_me/data/model/business_details_response.dart';
 import 'package:check_around_me/data/model/category_response.dart';
+import 'package:check_around_me/data/model/popular_category_response.dart';
 import 'package:check_around_me/data/repositories/business_repositories.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -23,6 +24,7 @@ class BusinessProvider extends ChangeNotifier {
   RequestFailure? error;
 
   List<CategoryResponse> categoryList = [];
+  List<PopularCategoryResponse> popularCategoryList = [];
   List<BusinessModel> businessList = [];
   List<BookingModel> bookingList = [];
   int? totalBookings;
@@ -45,6 +47,25 @@ class BusinessProvider extends ChangeNotifier {
             debugPrint("response");
             debugPrint(success.toString());
             categoryList = success;
+        isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  Future<void> getPopularCategories() async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.getPopularCategories();
+    result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+      },
+      (success) {
+        popularCategoryList = success;
         isLoading = false;
         notifyListeners();
       },

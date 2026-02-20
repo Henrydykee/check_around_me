@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/local_storage.dart';
@@ -107,17 +108,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return LoaderWrapper(
           isLoading: vm.isLoading,
           view: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.surface,
             appBar: AppBar(
               backgroundColor: Colors.white,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.chevron_left, color: Colors.black, size: 30),
+                icon: const Icon(Icons.chevron_left, color: AppTheme.onSurface, size: 28),
                 onPressed: () => router.pop(),
               ),
               title: const Text(
                 'Edit Profile',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
               ),
               centerTitle: true,
             ),
@@ -129,19 +130,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      borderRadius: AppTheme.borderRadiusXl,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Name Field
                         const Text(
                           'NAME',
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurfaceVariant,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -156,42 +163,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           },
                           decoration: InputDecoration(
                             hintText: 'e.g. John Doe',
-                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            hintStyle: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 14),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                            ),
+                            fillColor: AppTheme.surface,
+                            border: OutlineInputBorder(borderRadius: AppTheme.borderRadiusMd),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.15)),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red, width: 1),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: const BorderSide(color: Colors.red),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 24),
 
-                        // Email Field (Read-only)
                         const Text(
                           'EMAIL',
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurfaceVariant,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -202,34 +201,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'Email address',
-                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            hintStyle: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 14),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             filled: true,
-                            fillColor: Colors.grey.shade200,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                            ),
+                            fillColor: AppTheme.surfaceVariant,
+                            border: OutlineInputBorder(borderRadius: AppTheme.borderRadiusMd),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.1)),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 24),
 
-                        // Phone Number Field
                         const Text(
                           'PHONE NUMBER',
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurfaceVariant,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -245,44 +236,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           },
                           decoration: InputDecoration(
                             hintText: 'e.g. +234 123 456 7890',
-                            hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            hintStyle: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 14),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                            ),
+                            fillColor: AppTheme.surface,
+                            border: OutlineInputBorder(borderRadius: AppTheme.borderRadiusMd),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.15)),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red, width: 1),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: const BorderSide(color: Colors.red),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 32),
 
-                        // Save Button
                         SizedBox(
                           width: double.infinity,
                           height: 52,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade900,
+                              backgroundColor: AppTheme.primary,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppTheme.borderRadiusMd,
                               ),
                               elevation: 0,
                             ),
@@ -291,7 +274,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               'Save Changes',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
                             ),

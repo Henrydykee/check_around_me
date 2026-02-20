@@ -1,5 +1,7 @@
+import 'package:check_around_me/core/vm/provider_initilizers.dart';
 import 'package:check_around_me/data/model/user_model.dart';
 import 'package:flutter/material.dart';
+import '../core/services/local_storage.dart';
 import '../core/services/request_failure.dart';
 import '../data/model/create_account_payload.dart';
 import '../data/repositories/auth_repositories.dart';
@@ -97,4 +99,28 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
+  Future<bool> logout() async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.logout();
+    return await result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (_) async {
+        userModel = null;
+        final storage = inject<LocalStorageService>();
+        await storage.remove("secret");
+        await storage.remove("user");
+        await storage.remove("userId");
+        isLoading = false;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
 }

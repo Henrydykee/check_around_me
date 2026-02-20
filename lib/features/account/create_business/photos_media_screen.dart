@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
+import '../../../core/theme/app_theme.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/services/local_storage.dart';
@@ -11,7 +13,6 @@ import '../../../core/widget/loader_wrapper.dart';
 import '../../../data/model/create_business_payload.dart';
 import '../../../data/model/create_business_payload.dart' as models;
 import '../../../vm/business_provider.dart';
-import '../../account/my_businesses_screen.dart';
 
 class PhotosMediaScreen extends StatefulWidget {
   final Map<String, dynamic> businessData;
@@ -38,19 +39,19 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking images: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking images: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _uploadImages(BusinessProvider vm) async {
-    if (_selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one image')),
-      );
-      return;
-    }
+    if (_selectedImages.isEmpty) return;
 
     setState(() {
       _isUploading = true;
@@ -103,7 +104,7 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
       return;
     }
 
-    // Upload images if not already uploaded
+    // Upload images if any selected (optional step)
     if (_selectedImages.isNotEmpty && _uploadedImages.isEmpty) {
       await _uploadImages(vm);
     }
@@ -146,34 +147,30 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
     // Create business
     final businessId = await vm.createBusiness(payload);
 
-    if (vm.error != null) {
+    if (vm.error != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.error!.message)),
+        SnackBar(
+          content: Text(vm.error!.message),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red.shade700,
+        ),
       );
       return;
     }
 
-    if (businessId != null) {
-      // Show success message first
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Business created successfully!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
+    if (businessId != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Business created successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      // Pop back to My Businesses (3 screens: Photos -> Services -> Basic)
+      for (var i = 0; i < 3 && mounted; i++) {
+        router.pop(true);
       }
-      
-      // Navigate to My Businesses screen after a short delay
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          router.pushAndRemoveUntil(
-            const MyBusinessesScreen(),
-            (route) => false,
-          );
-        }
-      });
     }
   }
 
@@ -195,25 +192,25 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
         return LoaderWrapper(
           isLoading: vm.isLoading || _isUploading,
           view: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.surface,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: AppTheme.surface,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.chevron_left, color: Colors.black, size: 30),
+                icon: Icon(Icons.chevron_left, color: AppTheme.onSurface, size: 30),
                 onPressed: () => router.pop(),
               ),
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Photos & Media',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     '(3/3)',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -225,8 +222,8 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppTheme.surfaceVariant,
+                    borderRadius: AppTheme.borderRadiusSm,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,9 +417,9 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                         height: 52,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade900,
+                            backgroundColor: AppTheme.primary,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: AppTheme.borderRadiusMd,
                             ),
                             elevation: 0,
                           ),

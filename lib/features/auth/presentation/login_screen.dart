@@ -1,11 +1,12 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/core/utils/router.dart';
 import 'package:check_around_me/core/vm/provider_view_model.dart';
 import 'package:check_around_me/core/widget/loader_wrapper.dart';
 import 'package:check_around_me/features/auth/presentation/signup_screen.dart';
 import 'package:check_around_me/vm/auth_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/vm/provider_initilizers.dart';
 import '../../../core/widget/error.dart';
 import '../../navbar/check_navbar.dart';
@@ -33,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return LoaderWrapper(
           isLoading: vm.isLoading,
           view: Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.surface,
             body: SafeArea(
               child: Center(
                 child: SingleChildScrollView(
@@ -85,18 +86,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           decoration: InputDecoration(
                             hintText: 'Enter your email address',
-                            hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            hintStyle: GoogleFonts.poppins(color: AppTheme.onSurfaceVariant),
+                            fillColor: Colors.white,
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.2)),
+                            ),
+                            border: OutlineInputBorder(borderRadius: AppTheme.borderRadiusMd),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 20),
 
-                        // Password Input
                         Text(
                           'Password',
                           style: GoogleFonts.poppins(
@@ -109,25 +116,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: passwordCtrl,
                           validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
+                              value == null || value.isEmpty ? 'Required' : null,
                           obscureText: obscurePassword,
                           decoration: InputDecoration(
                             hintText: '********',
-                            hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                            hintStyle: GoogleFonts.poppins(color: AppTheme.onSurfaceVariant),
+                            fillColor: Colors.white,
+                            filled: true,
                             suffixIcon: IconButton(
                               icon: Icon(
-                                obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+                                obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                color: AppTheme.onSurfaceVariant,
                               ),
-                              onPressed: () {
-                                setState(() => obscurePassword = !obscurePassword);
-                              },
+                              onPressed: () => setState(() => obscurePassword = !obscurePassword),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.2)),
+                            ),
+                            border: OutlineInputBorder(borderRadius: AppTheme.borderRadiusMd),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: AppTheme.borderRadiusMd,
+                              borderSide: BorderSide(color: AppTheme.primary),
                             ),
                           ),
                         ),
@@ -140,9 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 52,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF3B5BB3),
+                              backgroundColor: AppTheme.primary,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppTheme.borderRadiusMd,
                               ),
                             ),
                             onPressed: () async {
@@ -204,9 +215,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 52,
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.black,
+                              backgroundColor: AppTheme.onSurface,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppTheme.borderRadiusMd,
                               ),
                             ),
                             icon: const FaIcon(

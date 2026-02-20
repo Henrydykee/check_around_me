@@ -1,4 +1,4 @@
-import 'package:check_around_me/core/utils/color_util.dart';
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/core/widget/text_holder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -93,11 +93,11 @@ class CustomTextField extends StatelessWidget {
           validator: validator,
           textAlign: align ?? TextAlign.left,
           keyboardType: keyboardType ?? TextInputType.text,
-          cursorColor: cursorColor ?? "7F12C8".toColor(),
+          cursorColor: cursorColor ?? AppTheme.primary,
           focusNode: focusNode,
           inputFormatters: inputFormatters,
           textInputAction: textInputAction ?? TextInputAction.done,
-          style: TextStyle(color: "7F12C8".toColor(), fontSize: fontSize ?? 14, fontFamily: fontFamily ?? Theme.of(context).textTheme.bodyMedium?.fontFamily,),
+          style: TextStyle(color: AppTheme.primary, fontSize: fontSize ?? 14, fontFamily: fontFamily ?? Theme.of(context).textTheme.bodyMedium?.fontFamily),
           onEditingComplete: () {
             if (nextFocusNode != null) {
               FocusScope.of(context).requestFocus(nextFocusNode);
@@ -119,45 +119,44 @@ class CustomTextField extends StatelessWidget {
             contentPadding: padding ?? const EdgeInsets.symmetric(horizontal: 17, vertical: 20),
             hintText: hinttitle,
             hintStyle: TextStyle(
-              color: "7F12C8".toColor(),
+              color: AppTheme.primary.withOpacity(0.7),
               fontSize: fontSize ?? 14,
               fontFamily: fontFamily ?? Theme.of(context).textTheme.bodyMedium?.fontFamily,
             ),
-            fillColor: "FCF7FF".toColor(),
+            fillColor: AppTheme.primaryLight,
             filled: true,
             suffix: suffix,
             suffixIcon: suffixIcon,
 
-            // 🔥 keep prefix always visible & scalable
             prefixIcon: prefix != null
                 ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: prefix,
-            )
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    child: prefix,
+                  )
                 : prefixIcon,
 
             prefixText: prefixText,
-            prefixStyle: TextStyle(color: "7F12C8".toColor()),
+            prefixStyle: TextStyle(color: AppTheme.primary),
             labelStyle: const TextStyle(fontSize: 16),
 
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-              borderSide: BorderSide(color: "7F12C8".toColor().withOpacity(0.1)),
+              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.15)),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-              borderSide: BorderSide(color: borderColor ?? "7F12C8".toColor().withOpacity(0.2)),
+              borderSide: BorderSide(color: borderColor ?? AppTheme.primary.withOpacity(0.4)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-              borderSide: BorderSide(color: borderColor ?? "7F12C8".toColor()),
+              borderSide: BorderSide(color: borderColor ?? AppTheme.primary),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-              borderSide: BorderSide(color: borderColor ?? "7F12C8".toColor()),
+              borderSide: BorderSide(color: borderColor ?? AppTheme.primary),
             ),
           ),
 

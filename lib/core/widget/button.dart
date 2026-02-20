@@ -1,4 +1,4 @@
-import 'package:check_around_me/core/utils/color_util.dart';
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
@@ -30,12 +30,12 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color backgroundColor = isDisabled
-        ? "7F12C8".toColor().withOpacity(0.5) // Disabled background
-        : (btnColor ?? "7F12C8".toColor());   // Active background
+        ? AppTheme.primary.withOpacity(0.5)
+        : (btnColor ?? AppTheme.primary);
 
     final Color finalTextColor = isDisabled
-        ? Colors.black // Disabled text
-        : (textColor ?? Colors.white); // Active text
+        ? Colors.black
+        : (textColor ?? Colors.white);
 
     return GestureDetector(
       onTap: isDisabled
@@ -48,9 +48,8 @@ class CustomButton extends StatelessWidget {
         width: width ?? double.infinity,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: borderColor ?? "7F12C8".toColor()),
-          // optional rounded corners
+          borderRadius: AppTheme.borderRadiusPill,
+          border: Border.all(color: borderColor ?? AppTheme.primary),
         ),
         alignment: Alignment.center,
         child: Padding(

@@ -39,5 +39,9 @@ class AppConfig {
   // Helper to check if we're in dev mode
   static bool get isDev => environment.toLowerCase() == 'dev';
   static bool get isMain => !isDev;
+
+  /// URL for a business's primary image (uses dev or prod base based on environment).
+  static String businessPrimaryImageUrl(String businessId) =>
+      '$baseUrl/businesses/$businessId/images/primary';
 }
 

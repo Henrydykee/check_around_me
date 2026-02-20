@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/router.dart';
 import '../../../core/utils/currency_input_formatter.dart';
 import 'photos_media_screen.dart';
@@ -96,25 +97,25 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Colors.black, size: 30),
+          icon: Icon(Icons.chevron_left, color: AppTheme.onSurface, size: 30),
           onPressed: () => router.pop(),
         ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Services & Prices',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
             ),
             const SizedBox(width: 8),
             Text(
               '(2/3)',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -126,8 +127,8 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
+              color: AppTheme.surfaceVariant,
+              borderRadius: AppTheme.borderRadiusSm,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,14 +313,14 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                           ElevatedButton(
                             onPressed: _addService,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade900,
+                              backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 16,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: AppTheme.borderRadiusXs,
                               ),
                             ),
                             child: const Row(
@@ -508,7 +509,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                           _maxPrice = values.end.toInt();
                         });
                       },
-                      activeColor: Colors.blue.shade900,
+                      activeColor: AppTheme.primary,
                     ),
                   ],
                 ),
@@ -549,9 +550,9 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                   height: 52,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade900,
+                      backgroundColor: AppTheme.primary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: AppTheme.borderRadiusMd,
                       ),
                       elevation: 0,
                     ),
@@ -589,7 +590,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
           _paymentOptions[key] = value ?? false;
         });
       },
-      activeColor: Colors.blue.shade900,
+      activeColor: AppTheme.primary,
       contentPadding: EdgeInsets.zero,
     );
   }
