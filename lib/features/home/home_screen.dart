@@ -24,7 +24,9 @@ String _greeting() {
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onNavigateToSearchTab;
+
+  const HomeScreen({super.key, this.onNavigateToSearchTab});
 
   @override
   Widget build(BuildContext context) {
@@ -285,7 +287,7 @@ class HomeScreen extends StatelessWidget {
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.onSurface),
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: onNavigateToSearchTab,
                               child: Text(
                                 "View All",
                                 style: TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w600),

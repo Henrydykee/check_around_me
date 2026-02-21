@@ -5,9 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // --- Colors (existing brand: #7F12C8)
-  static const Color primary = Color(0xFF7F12C8);
-  static const Color primaryLight = Color(0xFFFCF7FF);
+  // --- Colors (brand: blue)
+  static const Color primary = Color(0xFF1976D2); // Material Blue 700
+  static const Color primaryLight = Color(0xFFE3F2FD); // Blue 50
   static const Color surface = Color(0xFFF8F9FA);
   static const Color surfaceVariant = Color(0xFFF1F3F5);
   static const Color onSurface = Color(0xFF1A1A1A);

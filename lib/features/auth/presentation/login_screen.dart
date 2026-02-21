@@ -5,8 +5,9 @@ import 'package:check_around_me/core/widget/loader_wrapper.dart';
 import 'package:check_around_me/features/auth/presentation/signup_screen.dart';
 import 'package:check_around_me/vm/auth_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // uncomment when Google login is re-enabled
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/services/local_storage.dart';
 import '../../../core/vm/provider_initilizers.dart';
 import '../../../core/widget/error.dart';
 import '../../navbar/check_navbar.dart';
@@ -25,6 +26,26 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordCtrl = TextEditingController();
 
   bool obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  void _loadSavedEmail() {
+    final storage = inject<LocalStorageService>();
+    final saved = storage.getString("savedUserEmail");
+    if (saved != null && saved.isNotEmpty) {
+      emailCtrl.text = saved;
+    } else {
+      final user = storage.getJson("user");
+      final email = user?["email"]?.toString();
+      if (email != null && email.isNotEmpty) {
+        emailCtrl.text = email;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -207,41 +228,41 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 20),
+                        // const SizedBox(height: 20),
 
-                        // Google Login
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: AppTheme.onSurface,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppTheme.borderRadiusMd,
-                              ),
-                            ),
-                            icon: const FaIcon(
-                              FontAwesomeIcons.google,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            label: Text(
-                              'Login with Google',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const CheckNavbar(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                        // // Google Login
+                        // SizedBox(
+                        //   width: double.infinity,
+                        //   height: 52,
+                        //   child: OutlinedButton.icon(
+                        //     style: OutlinedButton.styleFrom(
+                        //       backgroundColor: AppTheme.onSurface,
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: AppTheme.borderRadiusMd,
+                        //       ),
+                        //     ),
+                        //     icon: const FaIcon(
+                        //       FontAwesomeIcons.google,
+                        //       color: Colors.white,
+                        //       size: 18,
+                        //     ),
+                        //     label: Text(
+                        //       'Login with Google',
+                        //       style: GoogleFonts.poppins(
+                        //         color: Colors.white,
+                        //         fontSize: 16,
+                        //       ),
+                        //     ),
+                        //     onPressed: () {
+                        //       Navigator.push(
+                        //         context,
+                        //         MaterialPageRoute(
+                        //           builder: (_) => const CheckNavbar(),
+                        //         ),
+                        //       );
+                        //     },
+                        //   ),
+                        // ),
 
                         const SizedBox(height: 25),
 

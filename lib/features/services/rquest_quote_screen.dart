@@ -1,3 +1,4 @@
+import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/core/utils/router.dart';
 import 'package:check_around_me/core/vm/provider_initilizers.dart';
 import 'package:check_around_me/core/vm/provider_view_model.dart';
@@ -136,7 +137,7 @@ class _RequestQuoteScreenState extends State<RequestQuoteScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -181,7 +182,7 @@ class _RequestQuoteScreenState extends State<RequestQuoteScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -225,7 +226,7 @@ class _RequestQuoteScreenState extends State<RequestQuoteScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                              borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -246,7 +247,7 @@ class _RequestQuoteScreenState extends State<RequestQuoteScreen> {
                           height: 52,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade900,
+                              backgroundColor: AppTheme.primary,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
                             ),

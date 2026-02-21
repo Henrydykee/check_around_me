@@ -20,9 +20,6 @@ class CreateBusinessPayload {
   String? status;
   int? minPrice;
   int? maxPrice;
-  bool? onSiteParking;
-  bool? garageParking;
-  bool? wifi;
   String? referralCode;
   BankDetails? bankDetails;
   Hours? hours;
@@ -50,9 +47,6 @@ class CreateBusinessPayload {
         this.status,
         this.minPrice,
         this.maxPrice,
-        this.onSiteParking,
-        this.garageParking,
-        this.wifi,
         this.referralCode,
         this.bankDetails,
         this.hours,
@@ -82,9 +76,6 @@ class CreateBusinessPayload {
     status = json['status'];
     minPrice = json['minPrice'];
     maxPrice = json['maxPrice'];
-    onSiteParking = json['onSiteParking'];
-    garageParking = json['garageParking'];
-    wifi = json['wifi'];
     referralCode = json['referralCode'];
     bankDetails = json['bankDetails'] != null
         ? new BankDetails.fromJson(json['bankDetails'])
@@ -101,43 +92,45 @@ class CreateBusinessPayload {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
-    data['about'] = this.about;
-    data['category'] = this.category;
-    data['services'] = this.services;
-    if (this.servicesPrices != null) {
-      data['servicesPrices'] = this.servicesPrices;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    void setIfNotNull(String key, dynamic value) {
+      if (value != null) data[key] = value;
     }
-    data['addressLine1'] = this.addressLine1;
-    data['city'] = this.city;
-    data['state'] = this.state;
-    data['country'] = this.country;
-    data['postalCode'] = this.postalCode;
-    data['paymentOptions'] = this.paymentOptions;
-    data['coordinates'] = this.coordinates;
-    data['phoneCountryCode'] = this.phoneCountryCode;
-    data['phoneNumber'] = this.phoneNumber;
-    data['email'] = this.email;
-    data['website'] = this.website;
-    data['status'] = this.status;
-    data['minPrice'] = this.minPrice;
-    data['maxPrice'] = this.maxPrice;
-    data['onSiteParking'] = this.onSiteParking;
-    data['garageParking'] = this.garageParking;
-    data['wifi'] = this.wifi;
-    data['referralCode'] = this.referralCode;
-    if (this.bankDetails != null) {
-      data['bankDetails'] = this.bankDetails!.toJson();
+    // API expects phoneCountryCode without '+' (e.g. "234")
+    String? stripPlus(String? s) =>
+        s == null ? null : (s.replaceFirst(RegExp(r'^\+\s*'), '').trim().isEmpty ? null : s.replaceFirst(RegExp(r'^\+\s*'), '').trim());
+
+    setIfNotNull('name', name);
+    setIfNotNull('about', about);
+    setIfNotNull('category', category);
+    setIfNotNull('services', services);
+    setIfNotNull('servicesPrices', servicesPrices);
+    setIfNotNull('addressLine1', addressLine1);
+    setIfNotNull('city', city);
+    setIfNotNull('state', state);
+    setIfNotNull('country', country);
+    setIfNotNull('postalCode', postalCode);
+    setIfNotNull('paymentOptions', paymentOptions);
+    setIfNotNull('coordinates', coordinates);
+    setIfNotNull('phoneCountryCode', stripPlus(phoneCountryCode) ?? phoneCountryCode);
+    setIfNotNull('phoneNumber', phoneNumber);
+    setIfNotNull('email', email);
+    data['website'] = website ?? '';
+    setIfNotNull('status', status);
+    setIfNotNull('minPrice', minPrice);
+    setIfNotNull('maxPrice', maxPrice);
+    data['referralCode'] = referralCode;
+    if (bankDetails != null) {
+      data['bankDetails'] = bankDetails!.toJson();
     }
-    if (this.hours != null) {
-      data['hours'] = this.hours!.toJson();
+    if (hours != null) {
+      data['hours'] = hours!.toJson();
     }
-    if (this.images != null) {
-      data['images'] = this.images!.map((v) => v.toJson()).toList();
+    if (images != null && images!.isNotEmpty) {
+      data['images'] = images!.map((v) => v.toJson()).toList();
     }
-    data['bookingFee'] = this.bookingFee;
-    data['bookingFeeType'] = this.bookingFeeType;
+    setIfNotNull('bookingFee', bookingFee);
+    setIfNotNull('bookingFeeType', bookingFeeType);
     return data;
   }
 }
@@ -266,7 +259,7 @@ class Images {
         this.uploadedBy});
 
   Images.fromJson(Map<String, dynamic> json) {
-    id = json['$id'];
+    id = json[r'$id'] ?? json['id'];
     imageUrl = json['imageUrl'];
     title = json['title'];
     fileId = json['fileId'];
@@ -276,16 +269,15 @@ class Images {
     uploadedBy = json['uploadedBy'];
   }
 
+  /// Images object for createBusiness: $id, businessId, imageUrl, isPrimary, title, uploadedBy (no createdAt, no fileId)
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['$id'] = this.id;
-    data['imageUrl'] = this.imageUrl;
-    data['title'] = this.title;
-    data['fileId'] = this.fileId;
-    data['businessId'] = this.businessId;
-    data['isPrimary'] = this.isPrimary;
-    data['createdAt'] = this.createdAt;
-    data['uploadedBy'] = this.uploadedBy;
-    return data;
+    return <String, dynamic>{
+      r'$id': id,
+      'businessId': businessId,
+      'imageUrl': imageUrl,
+      'isPrimary': isPrimary ?? false,
+      'title': title,
+      'uploadedBy': uploadedBy,
+    };
   }
 }

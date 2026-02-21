@@ -74,7 +74,7 @@ class ServiceCard extends StatelessWidget {
                     category,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.blueAccent, fontSize: 12, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 4),
                   Text(

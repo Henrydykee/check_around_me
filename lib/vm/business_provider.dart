@@ -3,6 +3,7 @@
 
 import 'dart:io';
 
+import 'package:dartz/dartz.dart';
 import 'package:check_around_me/data/model/business_details_response.dart';
 import 'package:check_around_me/data/model/category_response.dart';
 import 'package:check_around_me/data/model/popular_category_response.dart';
@@ -14,6 +15,8 @@ import '../data/model/business_model.dart';
 import '../data/model/create_booking_payload.dart';
 import '../data/model/booking_list_response.dart';
 import '../data/model/create_business_payload.dart';
+import '../data/model/create_review_payload.dart';
+import '../data/model/review_model.dart';
 
 class BusinessProvider extends ChangeNotifier {
   final BusinessRepository _repository;
@@ -152,6 +155,30 @@ class BusinessProvider extends ChangeNotifier {
             debugPrint("Booking cancelled successfully");
         isLoading = false;
         notifyListeners();
+      },
+    );
+  }
+
+  Future<Either<RequestFailure, ReviewsResponse>> getBusinessReviews(String businessId) async {
+    return _repository.getBusinessReviews(businessId);
+  }
+
+  Future<bool> createReview(CreateReviewPayload payload) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.createReview(payload);
+    return result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (_) {
+        isLoading = false;
+        notifyListeners();
+        return true;
       },
     );
   }

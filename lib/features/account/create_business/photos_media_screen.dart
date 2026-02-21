@@ -87,11 +87,6 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
     setState(() {
       if (index < _selectedImages.length) {
         _selectedImages.removeAt(index);
-      } else {
-        final uploadedIndex = index - _selectedImages.length;
-        if (uploadedIndex < _uploadedImages.length) {
-          _uploadedImages.removeAt(uploadedIndex);
-        }
       }
     });
   }
@@ -104,8 +99,9 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
       return;
     }
 
-    // Upload images if any selected (optional step)
-    if (_selectedImages.isNotEmpty && _uploadedImages.isEmpty) {
+    // Upload selected images; we get back URLs and send those in the payload (uploaded images are not shown in the UI)
+    if (_selectedImages.isNotEmpty) {
+      setState(() => _uploadedImages.clear());
       await _uploadImages(vm);
     }
 
@@ -120,6 +116,13 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
       sun: _buildDayHours(widget.businessData['hours']['Sun']),
     );
 
+    // Build bankDetails from businessData if present
+    models.BankDetails? bankDetails;
+    final bankData = widget.businessData['bankDetails'];
+    if (bankData is Map<String, dynamic>) {
+      bankDetails = models.BankDetails.fromJson(bankData);
+    }
+
     // Build payload
     final payload = CreateBusinessPayload(
       name: widget.businessData['name'],
@@ -130,14 +133,19 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
       addressLine1: widget.businessData['addressLine1'],
       city: widget.businessData['city'],
       state: widget.businessData['state'],
-      country: widget.businessData['country'],
+      country: widget.businessData['countryCode'] ?? widget.businessData['country'],
+      postalCode: widget.businessData['postalCode']?.toString(),
+      paymentOptions: List<String>.from(widget.businessData['paymentOptions'] ?? []),
+      coordinates: widget.businessData['coordinates']?.toString(),
       phoneCountryCode: widget.businessData['phoneCountryCode'],
       phoneNumber: widget.businessData['phoneNumber'],
       email: widget.businessData['email'],
+      website: widget.businessData['website']?.toString() ?? '',
       status: 'active',
       minPrice: widget.businessData['minPrice'],
       maxPrice: widget.businessData['maxPrice'],
-      paymentOptions: List<String>.from(widget.businessData['paymentOptions'] ?? []),
+      referralCode: widget.businessData['referralCode']?.toString(),
+      bankDetails: bankDetails,
       hours: hours,
       images: _uploadedImages,
       bookingFee: widget.businessData['bookingFee'],
@@ -284,8 +292,8 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                       ),
                       const SizedBox(height: 24),
                       
-                      // Selected Images Grid
-                      if (_selectedImages.isNotEmpty || _uploadedImages.isNotEmpty)
+                      // Selected Images Grid (only local picks; uploaded URLs are sent in payload, not shown)
+                      if (_selectedImages.isNotEmpty)
                         GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -294,9 +302,8 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                             crossAxisSpacing: 8,
                             mainAxisSpacing: 8,
                           ),
-                          itemCount: _selectedImages.length + _uploadedImages.length,
+                          itemCount: _selectedImages.length,
                           itemBuilder: (context, index) {
-                            final isSelectedImage = index < _selectedImages.length;
                             return Stack(
                               children: [
                                 Container(
@@ -306,25 +313,12 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: isSelectedImage
-                                        ? Image.file(
-                                            _selectedImages[index],
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                          )
-                                        : Image.network(
-                                            _uploadedImages[index - _selectedImages.length].imageUrl ?? '',
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return Container(
-                                                color: Colors.grey[200],
-                                                child: const Icon(Icons.error),
-                                              );
-                                            },
-                                          ),
+                                    child: Image.file(
+                                      _selectedImages[index],
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
                                   ),
                                 ),
                                 Positioned(
@@ -372,7 +366,7 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                                   _termsAccepted = value ?? false;
                                 });
                               },
-                              activeColor: Colors.blue.shade900,
+                              activeColor: AppTheme.primary,
                             ),
                             Expanded(
                               child: Padding(
@@ -393,7 +387,7 @@ class _PhotosMediaScreenState extends State<PhotosMediaScreen> {
                                           child: const Text(
                                             'Terms and Conditions',
                                             style: TextStyle(
-                                              color: Colors.blue,
+                                              color: AppTheme.primary,
                                               decoration: TextDecoration.underline,
                                             ),
                                           ),

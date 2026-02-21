@@ -25,6 +25,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   final _aboutController = TextEditingController();
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
+  final _postalCodeController = TextEditingController();
   final _phoneController = TextEditingController();
 
   String? _selectedCategory;
@@ -53,6 +54,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     _aboutController.dispose();
     _emailController.dispose();
     _addressController.dispose();
+    _postalCodeController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -99,7 +101,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           'category': _selectedCategory,
           'email': _emailController.text.trim(),
           'addressLine1': _addressController.text.trim(),
+          'postalCode': _postalCodeController.text.trim().isEmpty ? null : _postalCodeController.text.trim(),
           'country': _selectedCountry,
+          'countryCode': _selectedCountryData?.iso2,
           'state': _selectedState,
           'city': _selectedCity,
           'phoneCountryCode': _selectedPhoneCountryCode,
@@ -219,7 +223,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -274,7 +278,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -318,7 +322,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -391,7 +395,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -460,7 +464,50 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.red, width: 1),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Postal Code
+                      const Text(
+                        'POSTAL CODE',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _postalCodeController,
+                        keyboardType: TextInputType.streetAddress,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. 100001',
+                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -673,7 +720,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                                  borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                                 ),
                               ),
                               items: _availablePhoneCodes.map((code) {
@@ -716,7 +763,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                                  borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                                 ),
                                 errorBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -883,7 +930,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                     _hours[day]!['closed'] = value ?? false;
                                   });
                                 },
-                                activeColor: Colors.blue.shade900,
+                                activeColor: AppTheme.primary,
                               ),
                               const SizedBox(width: 4),
                               const Text(

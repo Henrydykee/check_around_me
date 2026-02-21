@@ -36,7 +36,7 @@ class _CheckNavbarState extends State<CheckNavbar> {
       body: IndexedStack(
         index: selectedTab,
         children:  [
-          HomeScreen(),
+          HomeScreen(onNavigateToSearchTab: () => _onTabSelected(1)),
           SearchScreen(),
           BookingsScreen(),
           AccountScreen(),

@@ -257,14 +257,14 @@ class _BusinessCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: AppTheme.primaryLight,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         service,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.blue[700],
+                          color: AppTheme.primary,
                         ),
                       ),
                     );

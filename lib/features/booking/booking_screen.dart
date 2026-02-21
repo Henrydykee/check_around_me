@@ -192,7 +192,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                                 children: [
                                   _buildStatCard(
                                     icon: Icons.access_time_filled_rounded,
-                                    color: Colors.blue,
+                                    color: AppTheme.primary,
                                     title: "Active",
                                     count: _getActiveBookingsCount(vm.bookingList).toString(),
                                   ),
@@ -362,7 +362,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
 
   Widget _buildStatCard({
     required IconData icon,
-    required MaterialColor color,
+    required Color color,
     required String title,
     required String count,
   }) {
@@ -389,10 +389,10 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.shade50,
+              color: color is MaterialColor ? color.shade50 : color.withOpacity(0.15),
               borderRadius: AppTheme.borderRadiusSm,
             ),
-            child: Icon(icon, color: color.shade700, size: 20),
+            child: Icon(icon, color: color is MaterialColor ? color.shade700 : color, size: 20),
           ),
           const SizedBox(height: 4),
           Text(
@@ -425,8 +425,8 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         statusText = const Color(0xFFD97706); // Dark Orange
         break;
       case 'Active':
-        statusBg = Colors.blue.shade50;
-        statusText = Colors.blue.shade700;
+        statusBg = AppTheme.primaryLight;
+        statusText = AppTheme.primary;
         break;
       case 'Cancelled':
         statusBg = Colors.grey.shade200;
@@ -437,8 +437,8 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         statusText = Colors.green.shade700;
         break;
       default:
-        statusBg = Colors.blue.shade50;
-        statusText = Colors.blue.shade700;
+        statusBg = AppTheme.primaryLight;
+        statusText = AppTheme.primary;
     }
 
     final dateToShow = booking.scheduledAt ?? booking.createdAt ?? '';

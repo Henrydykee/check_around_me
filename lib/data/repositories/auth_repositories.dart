@@ -44,7 +44,9 @@ class AuthRepository {
       final response = await _client.post(ApiUrls.login, data: {"email": email, "password": password});
       final data = response.data;
       String secret = data["secret"];
-      inject<LocalStorageService>().setString("secret", secret);
+      final storage = inject<LocalStorageService>();
+      await storage.setString("secret", secret);
+      await storage.setString("savedUserEmail", email);
       final result = data.toString();
       return Right(result);
     } on DioException catch (e) {

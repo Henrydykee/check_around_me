@@ -21,6 +21,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
   
   final List<String> _services = [];
   final Map<String, int> _servicesPrices = {};
+  final Map<String, TextEditingController> _servicePriceControllers = {};
   
   int _minPrice = 1000;
   int _maxPrice = 1000000;
@@ -35,6 +36,9 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
   void dispose() {
     _serviceController.dispose();
     _bookingFeeController.dispose();
+    for (final c in _servicePriceControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -44,6 +48,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
       setState(() {
         _services.add(service);
         _servicesPrices[service] = 0;
+        _servicePriceControllers[service] = TextEditingController(text: '0');
         _serviceController.clear();
       });
     }
@@ -51,6 +56,8 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
 
   void _removeService(String service) {
     setState(() {
+      _servicePriceControllers[service]?.dispose();
+      _servicePriceControllers.remove(service);
       _services.remove(service);
       _servicesPrices.remove(service);
     });
@@ -232,7 +239,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                           ),
                         ),
                       ),
@@ -304,7 +311,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                                  borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                                 ),
                               ),
                             ),
@@ -388,9 +395,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                           SizedBox(
                             width: 100,
                             child: TextFormField(
-                              controller: TextEditingController(
-                                text: _servicesPrices[service]?.toString() ?? '0',
-                              ),
+                              controller: _servicePriceControllers[service]!,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
@@ -417,7 +422,7 @@ class _ServicesPricesScreenState extends State<ServicesPricesScreen> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.blue.shade300, width: 1.5),
+                                  borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6), width: 1.5),
                                 ),
                               ),
                             ),

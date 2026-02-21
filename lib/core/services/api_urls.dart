@@ -23,7 +23,7 @@ class ApiUrls {
   static String getConversationMessages(String conversationId) => "$baseUrl/conversations/$conversationId/messages";
 
   // Business endpoints
-  static String get createBusiness => "${baseUrl.replaceAll('/v1', '')}/createBusiness";
+  static String get createBusiness => 'https://www.checkaroundme.com/api/trpc/createBusiness?batch=1';
   static String get listBusinesses => "$baseUrl/businesses";
   static String getBusinessById(String businessId) => "$baseUrl/businesses/$businessId";
   static String get listMyBusinesses => "$baseUrl/businesses/my";

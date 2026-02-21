@@ -74,7 +74,13 @@ class BusinessRepository {
           }
         }
       };
-      
+
+      // Log full payload (pretty-printed)
+      try {
+        final pretty = const JsonEncoder.withIndent('  ').convert(wrappedPayload);
+        print('📤 CreateBusiness full payload:\n$pretty');
+      } catch (_) {}
+
       final response = await _client.post(ApiUrls.createBusiness, data: wrappedPayload);
       final result = response.data;
       return Right(result);
