@@ -6,6 +6,8 @@ class ApiUrls {
   // Auth endpoints
   static String get register => "$baseUrl/auth/register";
   static String get login => "$baseUrl/auth/login";
+  /// Login/signup with Google (backend creates account if needed, returns same { "secret": "..." } as login).
+  static String get loginGoogle => "$baseUrl/auth/login-google";
   static String get requestPasswordReset => "$baseUrl/auth/request-password-reset";
   static String get getCurrentUser => "$baseUrl/auth/me";
   static String get logout => "$baseUrl/auth/logout";

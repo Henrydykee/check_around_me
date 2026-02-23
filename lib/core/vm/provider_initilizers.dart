@@ -9,6 +9,7 @@ import 'package:provider/single_child_widget.dart';
 import '../../data/repositories/auth_repositories.dart';
 import '../../vm/auth_provider.dart';
 import '../services/api_client.dart';
+import '../services/appwrite_service.dart';
 import '../services/local_storage.dart';
 
 GetIt inject = GetIt.instance;
@@ -27,12 +28,13 @@ Future<void> setupLocator() async {
   final localStorage = await LocalStorageService.getInstance();
   inject.registerSingleton<LocalStorageService>(localStorage);
   inject.registerLazySingleton<ApiClient>(() => ApiClient());
+  inject.registerLazySingleton<AppwriteService>(() => AppwriteService());
 
   inject.registerLazySingleton<AuthRepository>(() => AuthRepository(inject()));
   inject.registerLazySingleton<BusinessRepository>(() => BusinessRepository(inject()));
   inject.registerLazySingleton<NotificationRepository>(() => NotificationRepository(inject()));
 
-  inject.registerLazySingleton<AuthProvider>(() => AuthProvider(inject()));
+  inject.registerLazySingleton<AuthProvider>(() => AuthProvider(inject(), inject()));
   inject.registerLazySingleton<BusinessProvider>(() => BusinessProvider(inject()));
 }
 

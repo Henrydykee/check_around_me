@@ -29,6 +29,16 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshUserFromApi());
+  }
+
+  /// Fetches current user from API and updates local storage so account tab shows correct name.
+  Future<void> _refreshUserFromApi() async {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    await auth.getCurrentUser();
+    if (!mounted) return;
+    _loadUserData();
   }
 
   void _loadUserData() {
@@ -41,6 +51,125 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _handleSignOut() async {
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppTheme.topSheetRadius,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 24,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 12, 28, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.onSurfaceVariant.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                // Icon in soft red circle
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEE2E2),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFDC2626).withOpacity(0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    size: 36,
+                    color: const Color(0xFFDC2626),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Sign out of your account?',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.onSurface,
+                    letterSpacing: -0.3,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'You’ll need to sign in again to access your profile, bookings, and preferences.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: AppTheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 28),
+                // Cancel – secondary style
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: AppTheme.onSurfaceVariant.withOpacity(0.5)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppTheme.borderRadiusMd,
+                      ),
+                      foregroundColor: AppTheme.onSurface,
+                    ),
+                    child: const Text('Stay signed in'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Sign out – primary destructive
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDC2626),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppTheme.borderRadiusMd,
+                      ),
+                    ),
+                    icon: const Icon(Icons.logout_rounded, size: 20),
+                    label: const Text('Yes, sign out'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted || confirmed != true) return;
     final auth = context.read<AuthProvider>();
     final success = await auth.logout();
     if (!mounted) return;

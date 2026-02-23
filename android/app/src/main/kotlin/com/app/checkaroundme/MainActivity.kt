@@ -1,4 +1,4 @@
-package com.example.check_around_me
+package com.app.checkaroundme
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -43,5 +43,26 @@ class AppConfig {
   /// URL for a business's primary image (uses dev or prod base based on environment).
   static String businessPrimaryImageUrl(String businessId) =>
       '$baseUrl/businesses/$businessId/images/primary';
+
+  // Appwrite (Google OAuth)
+  static const String appwriteEndpoint = 'https://fra.cloud.appwrite.io/v1';
+  static const String appwriteProjectId = '684ac0f3003e3f36e174';
+
+  /// Base URL for auth callbacks (no /v1). Web OAuth flow redirects here after Google sign-in.
+  static String get oauthCallbackBase => baseUrl.replaceAll('/v1', '');
+
+  /// Success redirect for OAuth (same as web). Backend receives this, then redirects to [oauthAppCallbackUrl] with ?secret=...
+  static String get oauthCallbackSuccess => '$oauthCallbackBase/auth/oauth-callback';
+  static String get oauthCallbackFailure => '$oauthCallbackBase/auth/oauth-callback?failure=true';
+
+  /// HTTPS URL we intercept in the WebView. Backend must redirect here with ?secret=... (or ?token=...).
+  static String get oauthAppCallbackUrl {
+    final host = Uri.parse(baseUrl).host;
+    return 'https://$host/auth/app-callback';
+  }
+
+  /// Host + path to match when intercepting in WebView (same host as API, path /auth/app-callback).
+  static String get oauthAppCallbackHost => Uri.parse(baseUrl).host;
+  static const String oauthAppCallbackPath = '/auth/app-callback';
 }
 

@@ -57,6 +57,35 @@ class AuthRepository {
     }
   }
 
+  /// Login or sign up with Google. Backend creates account if needed and returns same { "secret": "..." } as login.
+  Future<Either<RequestFailure, String>> loginWithGoogle({
+    required String email,
+    required String name,
+    required String appwriteUserId,
+  }) async {
+    try {
+      final response = await _client.post(ApiUrls.loginGoogle, data: {
+        "email": email,
+        "name": name,
+        "appwriteUserId": appwriteUserId,
+      });
+      final data = response.data as Map<String, dynamic>;
+      final secret = data["secret"] as String?;
+      if (secret == null || secret.isEmpty) {
+        return Left(RequestFailure("Invalid response: missing secret"));
+      }
+      final storage = inject<LocalStorageService>();
+      await storage.setString("secret", secret);
+      await storage.setString("savedUserEmail", email);
+      return Right(secret);
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?["message"] ?? e.message ?? "Google sign-in failed";
+      return Left(RequestFailure(errorMsg));
+    } catch (e) {
+      return Left(RequestFailure("Unexpected error occurred: $e"));
+    }
+  }
+
   Future<Either<RequestFailure, String>> forgotPassword(String email) async {
     try {
       final response = await _client.post(ApiUrls.requestPasswordReset, data: {"email": email});

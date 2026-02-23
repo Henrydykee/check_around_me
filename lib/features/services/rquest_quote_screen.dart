@@ -5,7 +5,7 @@ import 'package:check_around_me/core/vm/provider_view_model.dart';
 import 'package:check_around_me/core/widget/error.dart';
 import 'package:check_around_me/core/widget/loader_wrapper.dart';
 import 'package:check_around_me/data/model/business_model.dart';
-import 'package:check_around_me/features/navbar/check_navbar.dart';
+import 'package:check_around_me/features/booking/booking_success_screen.dart';
 import 'package:check_around_me/vm/business_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -61,15 +61,15 @@ class _RequestQuoteScreenState extends State<RequestQuoteScreen> {
       await viewModel.createBooking(payload);
 
       // Handle response
+      if (!mounted) return;
       if (viewModel.error != null) {
         return showErrorDialog(
           context,
           "Error",
           viewModel.error?.message.toString() ?? "",
         );
-      } else {
-        router.push(CheckNavbar());
       }
+      router.pushReplacement(const BookingSuccessScreen());
     }
   }
 

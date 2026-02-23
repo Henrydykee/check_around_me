@@ -1,4 +1,5 @@
 import 'package:check_around_me/core/theme/app_theme.dart';
+import 'package:check_around_me/core/utils/router.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import '../../core/widget/loader_wrapper.dart';
 import '../../core/widget/error.dart';
 import '../../data/model/booking_list_response.dart';
 import '../../vm/business_provider.dart';
+import 'booking_details_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -445,21 +447,30 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     final formattedDate = _formatDate(dateToShow);
     final serviceName = booking.serviceName ?? 'Service';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: AppTheme.borderRadiusLg,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
+    return InkWell(
+      onTap: () async {
+        final result = await router.push<bool>(BookingDetailsScreen(booking: booking));
+        if (result == true && mounted) {
+          final vm = Provider.of<BusinessProvider>(context, listen: false);
+          await vm.getMyBookings();
+        }
+      },
+      borderRadius: AppTheme.borderRadiusLg,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppTheme.borderRadiusLg,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,6 +622,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
               ),
           ]
         ],
+        ),
       ),
     );
   }

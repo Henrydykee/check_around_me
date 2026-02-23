@@ -1,5 +1,4 @@
 import 'package:check_around_me/core/theme/app_theme.dart';
-import 'package:check_around_me/core/utils/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -7,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'core/utils/router.dart';
 import 'core/vm/provider_initilizers.dart';
+import 'core/widget/oauth_deep_link_handler.dart';
 import 'features/onboarding/splash_screen.dart';
 
 Future<void> main() async {
@@ -47,7 +47,7 @@ class CheckAroundMe extends StatelessWidget {
             theme: AppTheme.themeData,
             debugShowCheckedModeBanner: false,
             navigatorKey: router.navigatorKey,
-            home:  SplashScreen(),
+            home: const OAuthDeepLinkHandler(child: SplashScreen()),
           ),
         ),
       ),
