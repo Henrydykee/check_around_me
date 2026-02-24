@@ -8,7 +8,9 @@ import 'package:check_around_me/features/auth/presentation/login_screen.dart';
 import 'package:check_around_me/vm/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // uncomment when Google register is re-enabled
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:check_around_me/core/theme/app_theme.dart';
+import 'package:check_around_me/features/navbar/check_navbar.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -426,34 +428,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
 
-                        // const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                        // // Google Signup
-                        // SizedBox(
-                        //   width: double.infinity,
-                        //   height: 52,
-                        //   child: OutlinedButton.icon(
-                        //     style: OutlinedButton.styleFrom(
-                        //       backgroundColor: Colors.grey[700],
-                        //       shape: RoundedRectangleBorder(
-                        //         borderRadius: BorderRadius.circular(10),
-                        //       ),
-                        //     ),
-                        //     icon: const FaIcon(
-                        //       FontAwesomeIcons.google,
-                        //       color: Colors.white,
-                        //       size: 18,
-                        //     ),
-                        //     label: Text(
-                        //       'Register with Google',
-                        //       style: GoogleFonts.poppins(
-                        //         color: Colors.white,
-                        //         fontSize: 16,
-                        //       ),
-                        //     ),
-                        //     onPressed: () {},
-                        //   ),
-                        // ),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: AppTheme.onSurface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            icon: const FaIcon(
+                              FontAwesomeIcons.google,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: Text(
+                              'Register with Google',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            onPressed: () async {
+                              final success = await vm.loginWithGoogle();
+                              if (!context.mounted) return;
+                              if (!success && vm.error != null) {
+                                showErrorDialog(
+                                    context, 'Register with Google', vm.error!.message);
+                                return;
+                              }
+                              if (success) {
+                                router.pushReplacement(CheckNavbar());
+                              }
+                            },
+                          ),
+                        ),
 
                         const SizedBox(height: 25),
 

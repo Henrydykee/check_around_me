@@ -5,6 +5,7 @@ import 'package:check_around_me/core/widget/loader_wrapper.dart';
 import 'package:check_around_me/features/auth/presentation/signup_screen.dart';
 import 'package:check_around_me/vm/auth_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/services/local_storage.dart';
 import '../../../core/vm/provider_initilizers.dart';
@@ -216,54 +217,54 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 20),
 
                         // Sign in with Google - commented out for now
-                        // Row(
-                        //   children: [
-                        //     const Expanded(child: Divider()),
-                        //     Padding(
-                        //       padding: const EdgeInsets.symmetric(horizontal: 8),
-                        //       child: Text('Or',
-                        //           style: GoogleFonts.poppins(color: Colors.black54)),
-                        //     ),
-                        //     const Expanded(child: Divider()),
-                        //   ],
-                        // ),
-                        // const SizedBox(height: 20),
-                        // SizedBox(
-                        //   width: double.infinity,
-                        //   height: 52,
-                        //   child: OutlinedButton.icon(
-                        //     style: OutlinedButton.styleFrom(
-                        //       backgroundColor: AppTheme.onSurface,
-                        //       shape: RoundedRectangleBorder(
-                        //         borderRadius: AppTheme.borderRadiusMd,
-                        //       ),
-                        //     ),
-                        //     icon: const FaIcon(
-                        //       FontAwesomeIcons.google,
-                        //       color: Colors.white,
-                        //       size: 18,
-                        //     ),
-                        //     label: Text(
-                        //       'Sign in with Google',
-                        //       style: GoogleFonts.poppins(
-                        //         color: Colors.white,
-                        //         fontSize: 16,
-                        //       ),
-                        //     ),
-                        //     onPressed: () async {
-                        //       final success = await vm.loginWithGoogle();
-                        //       if (!context.mounted) return;
-                        //       if (!success && vm.error != null) {
-                        //         showErrorDialog(context, 'Sign in with Google', vm.error!.message);
-                        //         return;
-                        //       }
-                        //       if (success) {
-                        //         router.pushReplacement(CheckNavbar());
-                        //       }
-                        //     },
-                        //   ),
-                        // ),
-                        // const SizedBox(height: 25),
+                        Row(
+                          children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text('Or',
+                                  style: GoogleFonts.poppins(color: Colors.black54)),
+                            ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: AppTheme.onSurface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: AppTheme.borderRadiusMd,
+                              ),
+                            ),
+                            icon: const FaIcon(
+                              FontAwesomeIcons.google,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: Text(
+                              'Sign in with Google',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            onPressed: () async {
+                              final success = await vm.loginWithGoogle();
+                              if (!context.mounted) return;
+                              if (!success && vm.error != null) {
+                                showErrorDialog(context, 'Sign in with Google', vm.error!.message);
+                                return;
+                              }
+                              if (success) {
+                                router.pushReplacement(CheckNavbar());
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 25),
 
                         const SizedBox(height: 25),
 

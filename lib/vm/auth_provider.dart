@@ -79,10 +79,10 @@ class AuthProvider extends ChangeNotifier {
       final user = await _appwrite.getAppwriteUser();
       final appwriteUserId = user.$id;
       debugPrint('🔐 [Appwrite] OAuth completed. User from SDK:');
-      debugPrint('   \$id: $appwriteUserId');      debugPrint('   email: ${user.email}');
-      debugPrint('   name: ${user.name}');
-      debugPrint('   emailVerification: ${user.emailVerification}');
-      debugPrint('   registration: ${user.registration}');
+      debugPrint('  \$id: $appwriteUserId');      debugPrint('   email: ${user.email}');
+      debugPrint('  name: ${user.name}');
+      debugPrint('  emailVerification: ${user.emailVerification}');
+      debugPrint('  registration: ${user.registration}');
       final email = user.email;
       final name = user.name;
       if (email.isEmpty) {
