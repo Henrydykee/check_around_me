@@ -1,12 +1,16 @@
 import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/core/utils/router.dart';
+import 'package:check_around_me/core/vm/provider_initilizers.dart';
 import 'package:check_around_me/core/widget/error.dart';
 import 'package:check_around_me/data/model/booking_list_response.dart';
+import 'package:check_around_me/data/repositories/conversation_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'booking_chat_screen.dart';
+import '../../vm/auth_provider.dart';
 import '../../vm/business_provider.dart';
 
 class BookingDetailsScreen extends StatelessWidget {
@@ -74,6 +78,45 @@ class BookingDetailsScreen extends StatelessWidget {
     return s == 'accepted';
   }
 
+  Future<void> _openChat(BuildContext context) async {
+    final bookingId = booking.id;
+    final otherUserId = booking.userId;
+    if (bookingId == null || bookingId.isEmpty) {
+      showErrorDialog(context, 'Error', 'Booking ID is missing.');
+      return;
+    }
+    if (otherUserId == null || otherUserId.isEmpty) {
+      showErrorDialog(context, 'Error', 'Cannot start chat: customer not linked to this booking.');
+      return;
+    }
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (auth.userModel?.id == null || auth.userModel!.id!.isEmpty) {
+      showErrorDialog(context, 'Error', 'You must be signed in to message.');
+      return;
+    }
+    final repo = inject<ConversationRepository>();
+    final currentUserId = auth.userModel!.id!;
+    // API requires exactly 2 user IDs: both participants in the conversation.
+    final result = await repo.getOrCreateConversation(
+      userIds: [currentUserId, otherUserId],
+      bookingId: bookingId,
+    );
+    if (!context.mounted) return;
+    result.fold(
+      (failure) => showErrorDialog(context, 'Error', failure.message),
+      (conversation) {
+        if (conversation.id == null || conversation.id!.isEmpty) {
+          showErrorDialog(context, 'Error', 'Could not open conversation.');
+          return;
+        }
+        router.push(BookingChatScreen(
+          conversationId: conversation.id!,
+          otherParticipantName: booking.userDetails?.name,
+        ));
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayStatus = _getDisplayStatus(booking.status);
@@ -98,6 +141,12 @@ class BookingDetailsScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.message_outlined, color: AppTheme.onSurface, size: 22),
+            onPressed: () => _openChat(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

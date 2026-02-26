@@ -1,4 +1,5 @@
 import 'package:check_around_me/data/repositories/business_repositories.dart';
+import 'package:check_around_me/data/repositories/conversation_repository.dart';
 import 'package:check_around_me/data/repositories/notification_repository.dart';
 import 'package:check_around_me/vm/business_provider.dart';
 import 'package:check_around_me/vm/notification_provider.dart';
@@ -32,6 +33,7 @@ Future<void> setupLocator() async {
 
   inject.registerLazySingleton<AuthRepository>(() => AuthRepository(inject()));
   inject.registerLazySingleton<BusinessRepository>(() => BusinessRepository(inject()));
+  inject.registerLazySingleton<ConversationRepository>(() => ConversationRepository(inject()));
   inject.registerLazySingleton<NotificationRepository>(() => NotificationRepository(inject()));
 
   inject.registerLazySingleton<AuthProvider>(() => AuthProvider(inject(), inject()));
