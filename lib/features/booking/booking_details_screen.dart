@@ -78,6 +78,31 @@ class BookingDetailsScreen extends StatelessWidget {
     return s == 'accepted';
   }
 
+  bool _shouldShowChatIcon(BookingModel b) {
+    final status = b.status?.toLowerCase() ?? '';
+    final type = b.type?.toLowerCase() ?? '';
+
+    // No chat for bookings that are still pending, cancelled, or disputed
+    if (status == 'pending_provider_acceptance' ||
+        status == 'cancelled' ||
+        status == 'cancelled_by_user' ||
+        status == 'disputed') {
+      return false;
+    }
+
+    final isInspection = type == 'inspection';
+
+    if (isInspection) {
+      // Inspection bookings: chat allowed once provider has accepted
+      return status == 'accepted' ||
+          status == 'in_progress' ||
+          status == 'completed';
+    }
+
+    // Standard / booking-fee bookings: chat only after payment when in_progress or later
+    return status == 'in_progress' || status == 'completed';
+  }
+
   Future<void> _openChat(BuildContext context) async {
     final bookingId = booking.id;
     final otherUserId = booking.userId;
@@ -142,10 +167,11 @@ class BookingDetailsScreen extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.message_outlined, color: AppTheme.onSurface, size: 22),
-            onPressed: () => _openChat(context),
-          ),
+          if (_shouldShowChatIcon(booking))
+            IconButton(
+              icon: const Icon(Icons.message_outlined, color: AppTheme.onSurface, size: 22),
+              onPressed: () => _openChat(context),
+            ),
         ],
       ),
       body: SafeArea(
