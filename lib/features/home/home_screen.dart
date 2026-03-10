@@ -43,6 +43,18 @@ class HomeScreen extends StatelessWidget {
       builder: (context, vm, child) {
         return Scaffold(
           backgroundColor: AppTheme.surface,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+            title: SizedBox(
+              height: 28,
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
           body: RefreshIndicator(
             onRefresh: () async {
               await vm.getCategory();
@@ -55,71 +67,76 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 56),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Consumer<AuthProvider>(
-                          builder: (context, auth, _) {
-                            final name = auth.userModel?.name?.trim();
-                            final greeting = _greeting();
-                            return Text(
-                              name != null && name.isNotEmpty
-                                  ? '$greeting, $name'
-                                  : greeting,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                                color: AppTheme.onSurface,
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Consumer<AuthProvider>(
+                            builder: (context, auth, _) {
+                              final name = auth.userModel?.name?.trim();
+                              final greeting = _greeting();
+                              return Text(
+                                name != null && name.isNotEmpty
+                                    ? '$greeting, $name'
+                                    : greeting,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 14,
+                                  color: AppTheme.onSurface,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Consumer<NotificationProvider>(
+                          builder: (context, notificationVm, _) {
+                            final count = notificationVm.unreadCount;
+                            return IconButton(
+                              onPressed: () => router.push(const NotificationsScreen()),
+                              icon: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  const Icon(
+                                    Icons.notifications_outlined,
+                                    color: AppTheme.onSurface,
+                                    size: 26,
+                                  ),
+                                  if (count > 0)
+                                    Positioned(
+                                      top: -2,
+                                      right: -2,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 16,
+                                          minHeight: 16,
+                                        ),
+                                        child: Text(
+                                          count > 99 ? '99+' : '$count',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             );
                           },
                         ),
-                      ),
-                      Consumer<NotificationProvider>(
-                        builder: (context, notificationVm, _) {
-                          final count = notificationVm.unreadCount;
-                          return IconButton(
-                            onPressed: () => router.push(const NotificationsScreen()),
-                            icon: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Icon(
-                                  Icons.notifications_outlined,
-                                  color: AppTheme.onSurface,
-                                  size: 26,
-                                ),
-                                if (count > 0)
-                                  Positioned(
-                                    top: -2,
-                                    right: -2,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      constraints: const BoxConstraints(
-                                        minWidth: 16,
-                                        minHeight: 16,
-                                      ),
-                                      child: Text(
-                                        count > 99 ? '99+' : '$count',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -150,22 +167,56 @@ class HomeScreen extends StatelessWidget {
                     child: SizedBox(
                       height: 120,
                       child: vm.categoryList.isEmpty
-                          ? Center(child: Text("No categories found", style: TextStyle(color: AppTheme.onSurfaceVariant)))
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              itemCount: vm.categoryList.length,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (c, i) {
-                                final category = vm.categoryList[i];
-                                return CategoryChip(
-                                  title: category.name ?? "",
-                                  subtitle: category.description ?? "",
-                                  imageUrl: category.imageUrl ?? "",
-                                  onTap: () {
-                                    router.push(SearchScreen(filter: category.name ?? ""));
-                                  },
-                                );
-                              },
+                          ? Center(
+                              child: Text(
+                                "No categories found",
+                                style: TextStyle(color: AppTheme.onSurfaceVariant),
+                              ),
+                            )
+                          : Stack(
+                              children: [
+                                Scrollbar(
+                                  thumbVisibility: false,
+                                  radius: const Radius.circular(4),
+                                  thickness: 3,
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    itemCount: vm.categoryList.length,
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (c, i) {
+                                      final category = vm.categoryList[i];
+                                      return CategoryChip(
+                                        title: category.name ?? "",
+                                        subtitle: category.description ?? "",
+                                        imageUrl: category.imageUrl ?? "",
+                                        onTap: () {
+                                          router.push(SearchScreen(filter: category.name ?? ""));
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                                Positioned(
+                                  left: 4,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Icon(
+                                    Icons.chevron_left_rounded,
+                                    size: 20,
+                                    color: AppTheme.onSurfaceVariant.withOpacity(0.6),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 4,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 20,
+                                    color: AppTheme.onSurfaceVariant.withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
                             ),
                     ),
                   ),
@@ -243,19 +294,48 @@ class HomeScreen extends StatelessWidget {
                                     style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 14),
                                   ),
                                 )
-                              : ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: vm.categoryList.length,
-                                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                                  itemBuilder: (context, i) {
-                                    final category = vm.categoryList[i];
-                                    return _PopularCategoryCard(
-                                      name: category.name ?? "",
-                                      imageUrl: category.imageUrl ?? "",
-                                      onTap: () =>
-                                          router.push(SearchScreen(filter: category.name ?? "")),
-                                    );
-                                  },
+                              : Stack(
+                                  children: [
+                                    Scrollbar(
+                                      thumbVisibility: false,
+                                      radius: const Radius.circular(4),
+                                      thickness: 3,
+                                      child: ListView.separated(
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: vm.categoryList.length,
+                                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                        itemBuilder: (context, i) {
+                                          final category = vm.categoryList[i];
+                                          return _PopularCategoryCard(
+                                            name: category.name ?? "",
+                                            imageUrl: category.imageUrl ?? "",
+                                            onTap: () =>
+                                                router.push(SearchScreen(filter: category.name ?? "")),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Icon(
+                                        Icons.chevron_left_rounded,
+                                        size: 18,
+                                        color: AppTheme.onSurfaceVariant.withOpacity(0.6),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Icon(
+                                        Icons.chevron_right_rounded,
+                                        size: 18,
+                                        color: AppTheme.onSurfaceVariant.withOpacity(0.6),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                         ),
                       ],
@@ -298,23 +378,52 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         SizedBox(
                           height: 300,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: vm.businessList.length > 5 ? 5 : vm.businessList.length,
-                            itemBuilder: (c, i) {
-                              final business = vm.businessList[i];
-                              return ServiceCard(
-                                imageUrl: AppConfig.businessPrimaryImageUrl(business.id ?? ''),
-                                title: business.name.toString(),
-                                location: business.addressLine1.toString(),
-                                category: business.category.toString(),
-                                description: business.about.toString(),
-                                rating: 0,
-                                onTap: () {
-                                  router.push(AboutServiceScreen(businessModel: business));
-                                },
-                              );
-                            },
+                          child: Stack(
+                            children: [
+                              Scrollbar(
+                                thumbVisibility: false,
+                                radius: const Radius.circular(4),
+                                thickness: 3,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: vm.businessList.length > 5 ? 5 : vm.businessList.length,
+                                  itemBuilder: (c, i) {
+                                    final business = vm.businessList[i];
+                                    return ServiceCard(
+                                      imageUrl: AppConfig.businessPrimaryImageUrl(business.id ?? ''),
+                                      title: business.name.toString(),
+                                      location: business.addressLine1.toString(),
+                                      category: business.category.toString(),
+                                      description: business.about.toString(),
+                                      rating: 0,
+                                      onTap: () {
+                                        router.push(AboutServiceScreen(businessModel: business));
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                              Positioned(
+                                left: 0,
+                                top: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.chevron_left_rounded,
+                                  size: 22,
+                                  color: AppTheme.onSurfaceVariant.withOpacity(0.7),
+                                ),
+                              ),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 22,
+                                  color: AppTheme.onSurfaceVariant.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

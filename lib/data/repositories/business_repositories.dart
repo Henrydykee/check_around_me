@@ -81,9 +81,35 @@ class BusinessRepository {
         print('📤 CreateBusiness full payload:\n$pretty');
       } catch (_) {}
 
-      final response = await _client.post(ApiUrls.createBusiness, data: wrappedPayload);
-      final result = response.data;
-      return Right(result);
+      // Use TRPC createBusiness endpoint: /trpc/createBusiness?batch=1
+      final baseWithoutVersion = ApiUrls.baseUrl.replaceAll('/v1', '');
+      // baseWithoutVersion already ends with /api, so we append only /trpc/...
+      final url = '$baseWithoutVersion/trpc/createBusiness';
+
+      final response = await _client.dio.post(
+        url,
+        queryParameters: {"batch": "1"},
+        data: wrappedPayload,
+      );
+
+      final data = response.data;
+      if (data is List && data.isNotEmpty) {
+        final first = data.first;
+        if (first is Map<String, dynamic>) {
+          final json = first["result"]?["data"]?["json"];
+          if (json is Map<String, dynamic>) {
+            final success = json["success"] == true;
+            final bookingId = json["business"]?["\$id"]?.toString();
+            if (success && bookingId != null && bookingId.isNotEmpty) {
+              return Right(bookingId);
+            }
+            final message = json["message"]?.toString() ?? "Create business failed";
+            return Left(RequestFailure(message));
+          }
+        }
+      }
+
+      return Left(RequestFailure("Invalid response from create business"));
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }
@@ -207,21 +233,186 @@ class BusinessRepository {
     }
   }
 
+  /// Updates an existing business using the TRPC updateBusiness endpoint.
+  Future<Either<RequestFailure, void>> updateBusinessTrpc(
+    String businessId,
+    CreateBusinessPayload payload,
+  ) async {
+    try {
+      final baseWithoutVersion = ApiUrls.baseUrl.replaceAll('/v1', '');
+      // baseWithoutVersion already ends with /api, so we append only /trpc/...
+      final url = '$baseWithoutVersion/trpc/updateBusiness';
+
+      final jsonPayload = payload.toJson();
+
+      // Build meta.values for fields that should be treated as "undefined" by TRPC
+      final metaValues = <String, dynamic>{};
+
+      // Website: when empty or null, backend expects data.website: ["undefined"]
+      final website = jsonPayload['website'];
+      if (website == null || website.toString().isEmpty || website == 'undefined') {
+        metaValues['data.website'] = ['undefined'];
+        jsonPayload['website'] = null;
+      }
+
+      final wrappedPayload = {
+        "0": {
+          "json": {
+            "businessId": businessId,
+            "data": jsonPayload,
+          },
+          "meta": {
+            "values": metaValues,
+            "v": 1,
+          },
+        },
+      };
+
+      // Optional: log pretty payload for debugging
+      try {
+        final pretty = const JsonEncoder.withIndent('  ').convert(wrappedPayload);
+        // ignore: avoid_print
+        print('📤 UpdateBusiness full payload:\n$pretty');
+      } catch (_) {}
+
+      final response = await _client.dio.post(
+        url,
+        queryParameters: {"batch": "1"},
+        data: wrappedPayload,
+      );
+
+      final data = response.data;
+      if (data is List && data.isNotEmpty) {
+        final first = data.first;
+        if (first is Map<String, dynamic>) {
+          final json = first["result"]?["data"]?["json"];
+          if (json is Map<String, dynamic>) {
+            final success = json["success"] == true;
+            final message = json["message"]?.toString() ?? "Update failed";
+            if (success) {
+              return const Right(null);
+            }
+            return Left(RequestFailure(message));
+          }
+        }
+      }
+
+      return Left(RequestFailure("Invalid response from update business"));
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?["message"] ?? e.message ?? "Failed to update business";
+      return Left(RequestFailure(message));
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  /// Fetches bookings for a specific business using the TRPC listBusinessBookings endpoint.
+  Future<Either<RequestFailure, BookingListResponse>> getBusinessBookingsTrpc({
+    required String businessId,
+    List<String>? statuses,
+    int? limitAll,
+    int? limitFiltered,
+  }) async {
+    try {
+      final baseWithoutVersion = ApiUrls.baseUrl.replaceAll('/v1', '');
+      // baseWithoutVersion already ends with /api, so we append only /trpc/...
+      final url = '$baseWithoutVersion/trpc/listBusinessBookings,listBusinessBookings';
+
+      final input = <String, dynamic>{
+        "0": {
+          "json": {
+            "businessId": businessId,
+            if (limitAll != null) "limit": limitAll,
+          },
+        },
+        "1": {
+          "json": {
+            "businessId": businessId,
+            if (statuses != null && statuses.isNotEmpty) "status": statuses,
+            if (limitFiltered != null) "limit": limitFiltered,
+          },
+        },
+      };
+
+      final response = await _client.dio.get(
+        url,
+        queryParameters: {
+          "batch": "1",
+          "input": jsonEncode(input),
+        },
+      );
+
+      final data = response.data;
+      if (data is! List || data.isEmpty) {
+        return Left(RequestFailure("Invalid business bookings response"));
+      }
+
+      // Use the second entry (filtered list) by default if present; fall back to first.
+      final Map<String, dynamic>? entry = (data.length > 1 ? data[1] : data[0]) as Map<String, dynamic>?;
+      if (entry == null) {
+        return Left(RequestFailure("Malformed business bookings response"));
+      }
+
+      final json = entry["result"]?["data"]?["json"];
+      if (json is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid business bookings payload"));
+      }
+
+      final result = BookingListResponse.fromJson(json);
+      return Right(result);
+    } on DioException catch (e) {
+      final message = e.response?.data?["message"] ?? e.message ?? "Failed to load business bookings";
+      return Left(RequestFailure(message));
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
   Future<Either<RequestFailure, void>> cancelBooking(String bookingId, {String reason = ''}) async {
     try {
-      // Payload structure as provided by user
+      // TRPC payload structure as provided by user
       final payload = {
         "0": {
           "json": {
             "bookingId": bookingId,
             "action": "user_cancel",
-            "reason": reason
+            "reason": reason,
+          },
+        },
+      };
+
+      final baseWithoutVersion = ApiUrls.baseUrl.replaceAll('/v1', '');
+      // baseWithoutVersion already ends with /api, so we append only /trpc/...
+      final url = '$baseWithoutVersion/trpc/updateBookingStatus';
+
+      final response = await _client.dio.post(
+        url,
+        queryParameters: {"batch": "1"},
+        data: payload,
+      );
+
+      final data = response.data;
+      if (data is List && data.isNotEmpty) {
+        final first = data.first;
+        if (first is Map<String, dynamic>) {
+          final json = first["result"]?["data"]?["json"];
+          if (json is Map<String, dynamic>) {
+            final success = json["success"] == true;
+            if (success) {
+              return const Right(null);
+            }
+            final message = json["message"]?.toString() ?? "Cancel booking failed";
+            return Left(RequestFailure(message));
           }
         }
-      };
-      
-      await _client.post(ApiUrls.updateBookingStatusLegacy, data: payload);
-      return const Right(null);
+      }
+
+      return Left(RequestFailure("Invalid response from cancel booking"));
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?["message"] ?? e.message ?? "Failed to cancel booking";
+      return Left(RequestFailure(message));
     } catch (e) {
       return Left(RequestFailure(e.toString()));
     }

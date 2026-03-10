@@ -5,6 +5,7 @@ import '../../core/services/local_storage.dart';
 import '../../core/utils/router.dart';
 import '../../core/vm/provider_initilizers.dart';
 import '../../data/model/user_model.dart';
+import '../../data/repositories/auth_repositories.dart';
 
 class ReferralsScreen extends StatefulWidget {
   const ReferralsScreen({super.key});
@@ -17,11 +18,13 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
   UserModel? _user;
   final TextEditingController _shareLinkController = TextEditingController();
   final TextEditingController _referralCodeController = TextEditingController();
+  bool _isLoadingReferral = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadReferralFromBackend();
   }
 
   void _loadUserData() {
@@ -35,6 +38,38 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
             ? 'https://beta.checkaroundme.com/auth?ref=$referralCode'
             : '';
       });
+    }
+  }
+
+  Future<void> _loadReferralFromBackend() async {
+    try {
+      final repo = inject<AuthRepository>();
+      setState(() {
+        _isLoadingReferral = true;
+      });
+      final result = await repo.getReferralCodeFromSummary();
+      if (!mounted) return;
+      result.fold(
+        (_) {
+          // Ignore error here; we'll keep whatever was loaded from local storage.
+        },
+        (referralCode) {
+          setState(() {
+            _referralCodeController.text = referralCode;
+            _shareLinkController.text = referralCode.isNotEmpty
+                ? 'https://beta.checkaroundme.com/auth?ref=$referralCode'
+                : '';
+          });
+        },
+      );
+    } catch (_) {
+      // Silently ignore unexpected errors; UI will continue using local storage value.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingReferral = false;
+        });
+      }
     }
   }
 
@@ -84,6 +119,32 @@ class _ReferralsScreenState extends State<ReferralsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_user == null)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.info_outline, size: 18, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Log in to see and share your referral code.',
+                          style: TextStyle(fontSize: 13, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (_isLoadingReferral)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: LinearProgressIndicator(minHeight: 3),
+                ),
               // Header Section
               const Text(
                 'Referrals',

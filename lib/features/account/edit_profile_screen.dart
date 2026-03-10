@@ -272,40 +272,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       child: Column(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: Colors.white,
-                child: Text(
-                  _getInitials(_user?.name),
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primary,
-                  ),
-                ),
+          CircleAvatar(
+            radius: 48,
+            backgroundColor: Colors.white,
+            child: Text(
+              _getInitials(_user?.name),
+              style: GoogleFonts.poppins(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.primary,
               ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(Icons.camera_alt_rounded, size: 18, color: AppTheme.onSurfaceVariant),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 14),
           Text(

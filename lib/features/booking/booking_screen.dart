@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/vm/provider_initilizers.dart';
+import '../../core/utils/auth_guard.dart';
 import '../../core/vm/provider_view_model.dart';
 import '../../core/widget/loader_wrapper.dart';
 import '../../core/widget/error.dart';
@@ -22,11 +23,13 @@ class BookingsScreen extends StatefulWidget {
 class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedFilter = 'All Bookings';
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
   }
 
   @override
@@ -109,13 +112,59 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     }).length;
   }
 
+  Future<void> _loadBookingsForCurrentTab() async {
+    final vm = inject<BusinessProvider>();
+    // Require login for any bookings access
+    final ok = await requireLoggedIn(context);
+    if (!ok) return;
+    if (_currentTabIndex == 0) {
+      await vm.getMyBookings();
+    } else {
+      // Business bookings tab: load bookings for the first business (if any)
+      if (vm.myBusinesses.isEmpty) {
+        await vm.getMyBusinesses();
+      }
+      if (vm.myBusinesses.isEmpty) {
+        return;
+      }
+      final business = vm.myBusinesses.first;
+      final businessId = business.id ?? '';
+      if (businessId.isEmpty) return;
+
+      await vm.getBusinessBookingsTrpc(
+        businessId: businessId,
+        // Use same statuses as web for active/provider bookings
+        statuses: const [
+          'pending_provider_acceptance',
+          'accepted',
+          'in_progress',
+          'awaiting_user_confirmation',
+          'completed',
+          'cancelled',
+        ],
+        limitAll: 100,
+        limitFiltered: 50,
+      );
+    }
+  }
+
+  void _handleTabChange() {
+    if (_tabController.indexIsChanging) return;
+    setState(() {
+      _currentTabIndex = _tabController.index;
+      _selectedFilter = 'All Bookings';
+    });
+    // Load appropriate bookings for the active tab
+    _loadBookingsForCurrentTab();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ViewModelProvider(
       viewModel: inject<BusinessProvider>(),
       onModelReady: (vm) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          vm.getMyBookings();
+          _loadBookingsForCurrentTab();
         });
       },
       builder: (context, vm, child) {
@@ -128,7 +177,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                   ? _buildErrorView(vm)
                   : RefreshIndicator(
                       onRefresh: () async {
-                        await vm.getMyBookings();
+                        await _loadBookingsForCurrentTab();
                         if (vm.error != null) {
                           showErrorDialog(context, "Error", vm.error!.message);
                         }
@@ -224,9 +273,13 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'My Bookings',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.onSurface),
+                                  Text(
+                                    _currentTabIndex == 0 ? 'My Bookings' : 'Business Bookings',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.onSurface,
+                                    ),
                                   ),
                                   const SizedBox(height: 12),
                                   SingleChildScrollView(
@@ -304,7 +357,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => vm.getMyBookings(),
+              onPressed: _loadBookingsForCurrentTab,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -664,7 +717,8 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
                     ),
                   );
                 }
-                await vm.getMyBookings();
+                // Reload bookings for the currently active tab (my or business bookings)
+                await _loadBookingsForCurrentTab();
               }
             },
             child: Text('Yes, Cancel', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600)),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../account/account_screen.dart';
 import '../home/home_screen.dart';
-import '../messages/messages_screen.dart';
+// import '../messages/messages_screen.dart';
 import '../services/search_screen.dart';
 
 class CheckNavbar extends StatefulWidget {
@@ -40,7 +40,6 @@ class _CheckNavbarState extends State<CheckNavbar> {
           HomeScreen(onNavigateToSearchTab: () => _onTabSelected(1)),
           const SearchScreen(),
           const BookingsScreen(),
-          const MessagesScreen(),
           const AccountScreen(),
         ],
       ),
@@ -53,7 +52,7 @@ class _CheckNavbarState extends State<CheckNavbar> {
           FABBottomAppBarItem(iconData: Icons.home_outlined, name: "Home"),
           FABBottomAppBarItem(iconData: Icons.search_outlined, name: "Search"),
           FABBottomAppBarItem(iconData: Icons.calendar_month_outlined, name: "Booking"),
-          FABBottomAppBarItem(iconData: Icons.message_outlined, name: "Messages"),
+          // FABBottomAppBarItem(iconData: Icons.message_outlined, name: "Messages"),
           FABBottomAppBarItem(iconData: Icons.person_outline, name: "Account"),
         ],
       ),

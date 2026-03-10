@@ -8,6 +8,21 @@ import '../../core/utils/router.dart';
 import '../../core/widget/service_card.dart';
 import 'about_service_screen.dart';
 
+class SearchFilter {
+  final String location;
+  final double? minPrice;
+  final double? maxPrice;
+
+  const SearchFilter({
+    this.location = '',
+    this.minPrice,
+    this.maxPrice,
+  });
+
+  bool get hasActive =>
+      location.trim().isNotEmpty || minPrice != null || maxPrice != null;
+}
+
 class SearchScreen extends StatefulWidget {
   final String filter;
   const SearchScreen({super.key, this.filter = ""});
@@ -19,6 +34,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController controller = TextEditingController();
   late String activeFilter;
+  SearchFilter filter = const SearchFilter();
 
   @override
   void initState() {
@@ -31,12 +47,28 @@ class _SearchScreenState extends State<SearchScreen> {
     return ViewModelProvider(
       viewModel: inject<BusinessProvider>(),
       builder: (context, vm, child) {
-        // Filtered business list based on search text and active category
+        // Filtered business list based on search text, active category, and advanced filters
         final filteredList = vm.businessList.where((b) {
           final matchesCategory = activeFilter.isEmpty || b.category.toString() == activeFilter;
           final matchesSearch =
               controller.text.isEmpty || b.name.toString().toLowerCase().contains(controller.text.toLowerCase()) || b.about.toString().toLowerCase().contains(controller.text.toLowerCase());
-          return matchesCategory && matchesSearch;
+          final locationText = (b.addressLine1 ?? '').toString().toLowerCase();
+          final matchesLocation = filter.location.trim().isEmpty ||
+              locationText.contains(filter.location.trim().toLowerCase());
+
+          bool matchesPrice = true;
+          final minBusinessPrice = b.minPrice is num ? (b.minPrice as num).toDouble() : null;
+          final maxBusinessPrice = b.maxPrice is num ? (b.maxPrice as num).toDouble() : null;
+          final representativePrice = minBusinessPrice ?? maxBusinessPrice;
+
+          if (filter.minPrice != null && representativePrice != null) {
+            matchesPrice = representativePrice >= filter.minPrice!;
+          }
+          if (matchesPrice && filter.maxPrice != null && representativePrice != null) {
+            matchesPrice = representativePrice <= filter.maxPrice!;
+          }
+
+          return matchesCategory && matchesSearch && matchesLocation && matchesPrice;
         }).toList();
 
         return Scaffold(
@@ -92,7 +124,57 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _openFilterSheet,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: filter.hasActive ? AppTheme.primary : AppTheme.surfaceVariant,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppTheme.borderRadiusPill,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        icon: Icon(
+                          Icons.filter_list_rounded,
+                          size: 18,
+                          color: filter.hasActive ? AppTheme.primary : AppTheme.onSurfaceVariant,
+                        ),
+                        label: Text(
+                          filter.hasActive ? "Filters applied" : "Filters",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: filter.hasActive ? AppTheme.primary : AppTheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (filter.hasActive)
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              filter = const SearchFilter();
+                            });
+                          },
+                          child: const Text(
+                            "Clear",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
                 SizedBox(
                   height: 44,
                   child: ListView.separated(
@@ -166,5 +248,192 @@ class _SearchScreenState extends State<SearchScreen> {
         );
       },
     );
+  }
+
+  Future<void> _openFilterSheet() async {
+    final locationController = TextEditingController(text: filter.location);
+    final minPriceController =
+        TextEditingController(text: filter.minPrice?.toString() ?? '');
+    final maxPriceController =
+        TextEditingController(text: filter.maxPrice?.toString() ?? '');
+
+    final result = await showModalBottomSheet<SearchFilter>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    "Filters",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "Location",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: locationController,
+                decoration: InputDecoration(
+                  hintText: "City or area",
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: AppTheme.borderRadiusSm,
+                    borderSide: BorderSide(color: AppTheme.surfaceVariant),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Price range",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: minPriceController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        hintText: "Min",
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: AppTheme.borderRadiusSm,
+                          borderSide:
+                              BorderSide(color: AppTheme.surfaceVariant),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: maxPriceController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        hintText: "Max",
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: AppTheme.borderRadiusSm,
+                          borderSide:
+                              BorderSide(color: AppTheme.surfaceVariant),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(
+                        ctx,
+                        const SearchFilter(),
+                      );
+                    },
+                    child: const Text(
+                      "Clear filters",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      double? parse(String text) {
+                        if (text.trim().isEmpty) return null;
+                        return double.tryParse(text.trim());
+                      }
+
+                      Navigator.pop(
+                        ctx,
+                        SearchFilter(
+                          location: locationController.text.trim(),
+                          minPrice: parse(minPriceController.text),
+                          maxPrice: parse(maxPriceController.text),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppTheme.borderRadiusMd,
+                      ),
+                    ),
+                    child: const Text(
+                      "Apply",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        filter = result;
+      });
+    }
   }
 }

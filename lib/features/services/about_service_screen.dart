@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../core/utils/auth_guard.dart';
 
 class AboutServiceScreen extends StatefulWidget {
   final BusinessModel businessModel;
@@ -149,6 +150,8 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                         Icons.star_border,
                         "Write a review",
                         onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
                         final refreshed = await router.push(WriteReviewScreen(businessModel: business));
                         if (mounted && refreshed == true) _loadReviews();
                       },
@@ -158,7 +161,11 @@ class _AboutServiceScreenState extends State<AboutServiceScreen> {
                         Icons.request_quote,
                         "Request Quote",
                         filled: true,
-                        onTap: () => _showServicePricesDialog(business),
+                        onTap: () async {
+                          final ok = await requireLoggedIn(context);
+                          if (!ok) return;
+                          _showServicePricesDialog(business);
+                        },
                       ),
                       const SizedBox(height: 10),
                       _actionButton(

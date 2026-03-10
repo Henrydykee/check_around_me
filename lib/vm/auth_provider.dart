@@ -182,6 +182,36 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmNewPassword,
+  }) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    final result = await _repository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      confirmNewPassword: confirmNewPassword,
+    );
+
+    return result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (_) {
+        isLoading = false;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
+
   Future<bool> logout() async {
     isLoading = true;
     error = null;

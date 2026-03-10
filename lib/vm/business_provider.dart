@@ -140,6 +140,38 @@ class BusinessProvider extends ChangeNotifier {
     );
   }
 
+  Future<void> getBusinessBookingsTrpc({
+    required String businessId,
+    List<String>? statuses,
+    int? limitAll,
+    int? limitFiltered,
+  }) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    final result = await _repository.getBusinessBookingsTrpc(
+      businessId: businessId,
+      statuses: statuses,
+      limitAll: limitAll,
+      limitFiltered: limitFiltered,
+    );
+
+    result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+      },
+      (success) {
+        bookingList = success.bookings ?? [];
+        totalBookings = success.total;
+        isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
   Future<void> cancelBooking(String bookingId, {String reason = ''}) async {
     isLoading = true;
     error = null;
@@ -223,6 +255,27 @@ class BusinessProvider extends ChangeNotifier {
         isLoading = false;
         notifyListeners();
         return success;
+      },
+    );
+  }
+
+  Future<bool> updateBusiness(String businessId, CreateBusinessPayload payload) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+    final result = await _repository.updateBusinessTrpc(businessId, payload);
+    return result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (_) {
+        debugPrint("Business updated successfully");
+        isLoading = false;
+        notifyListeners();
+        return true;
       },
     );
   }

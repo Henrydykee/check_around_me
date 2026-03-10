@@ -1,6 +1,8 @@
 
 
 
+import 'dart:convert';
+
 import 'package:check_around_me/data/model/user_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -179,14 +181,112 @@ class AuthRepository {
       return Left(RequestFailure("Unexpected error occurred: $e"));
     }
   }
+  
+  /// Changes the user's password using TRPC changePassword endpoint.
+  Future<Either<RequestFailure, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmNewPassword,
+  }) async {
+    try {
+      final baseWithoutVersion = ApiUrls.baseUrl.replaceAll('/v1', '');
+      // baseWithoutVersion already ends with /api, so we append only /trpc/...
+      final url = '$baseWithoutVersion/trpc/changePassword';
 
+      // Matches the browser payload shape for changePassword
+      final payload = {
+        "0": {
+          "json": {
+            "currentPassword": currentPassword,
+            "newPassword": newPassword,
+            "confirmNewPassword": confirmNewPassword,
+          },
+        },
+      };
 
+      final response = await _client.dio.post(url,
+          queryParameters: {"batch": "1"}, data: payload);
 
+      final data = response.data;
+      if (data is List && data.isNotEmpty) {
+        final first = data.first;
+        if (first is Map<String, dynamic>) {
+          final json = first["result"]?["data"]?["json"];
+          if (json is Map<String, dynamic>) {
+            final success = json["success"] == true;
+            if (success) {
+              return const Right(null);
+            }
+            final message = json["message"]?.toString() ?? "Password change failed";
+            return Left(RequestFailure(message));
+          }
+        }
+      }
 
+      return Left(RequestFailure("Invalid response from password change"));
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?["message"] ?? e.message ?? "Failed to change password";
+      return Left(RequestFailure(errorMsg));
+    } catch (e) {
+      return Left(RequestFailure("Unexpected error occurred: $e"));
+    }
+  }
+  
+  /// Loads referral summary via TRPC and returns the current referral code.
+  Future<Either<RequestFailure, String>> getReferralCodeFromSummary() async {
+    try {
+      final baseWithoutVersion = ApiUrls.baseUrl.replaceAll('/v1', '');
+      // baseWithoutVersion already ends with /api, so we append only /trpc/...
+      final url = '$baseWithoutVersion/trpc/getReferralSummary,getUserBankDetails';
 
+      // Matches the captured browser request: both inputs with json: null + meta.values: ["undefined"]
+      final trpcInput = jsonEncode({
+        "0": {
+          "json": null,
+          "meta": {
+            "values": ["undefined"],
+            "v": 1,
+          },
+        },
+        "1": {
+          "json": null,
+          "meta": {
+            "values": ["undefined"],
+            "v": 1,
+          },
+        },
+      });
 
+      final response = await _client.dio.get(
+        url,
+        queryParameters: {
+          "batch": "1",
+          "input": trpcInput,
+        },
+      );
 
+      final data = response.data;
 
+      if (data is! List || data.isEmpty) {
+        return Left(RequestFailure("Invalid referral summary response"));
+      }
 
+      final first = data.first;
+      if (first is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid referral summary format"));
+      }
 
+      final referralCode = first["result"]?["data"]?["json"]?["referralCode"];
+      if (referralCode is String && referralCode.isNotEmpty) {
+        return Right(referralCode);
+      }
+
+      return Left(RequestFailure("Referral code not found"));
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?["message"] ?? e.message ?? "Failed to load referral code";
+      return Left(RequestFailure(errorMsg));
+    } catch (e) {
+      return Left(RequestFailure("Unexpected error occurred: $e"));
+    }
+  }
 }

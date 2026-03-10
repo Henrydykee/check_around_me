@@ -10,10 +10,12 @@ import '../../data/model/user_model.dart';
 import '../../vm/auth_provider.dart';
 import '../auth/presentation/login_screen.dart';
 import 'billing_screen.dart';
+import '../../core/utils/auth_guard.dart';
 import 'edit_profile_screen.dart';
 import 'my_businesses_screen.dart';
 import 'notifications_screen.dart';
 import 'referrals_screen.dart';
+import 'security_settings_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -278,6 +280,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       icon: Icons.edit_outlined,
                       title: 'Edit Profile',
                       onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
                         final result = await router.push(const EditProfileScreen());
                         if (result == true) _loadUserData();
                       },
@@ -286,31 +290,51 @@ class _AccountScreenState extends State<AccountScreen> {
                     _buildMenuOption(
                       icon: Icons.business_center_outlined,
                       title: 'My Businesses',
-                      onTap: () => router.push(const MyBusinessesScreen()),
+                      onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
+                        router.push(const MyBusinessesScreen());
+                      },
                       showDivider: true,
                     ),
                     _buildMenuOption(
                       icon: Icons.verified_user_outlined,
                       title: 'Security',
-                      onTap: () {},
+                      onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
+                        router.push(const SecuritySettingsScreen());
+                      },
                       showDivider: true,
                     ),
                     _buildMenuOption(
                       icon: Icons.share_outlined,
                       title: 'Referrals',
-                      onTap: () => router.push(const ReferralsScreen()),
+                      onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
+                        router.push(const ReferralsScreen());
+                      },
                       showDivider: true,
                     ),
                     _buildMenuOption(
                       icon: Icons.notifications_outlined,
                       title: 'Notifications',
-                      onTap: () => router.push(const NotificationsScreen()),
+                      onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
+                        router.push(const NotificationsScreen());
+                      },
                       showDivider: true,
                     ),
                     _buildMenuOption(
                       icon: Icons.credit_card_outlined,
                       title: 'Billing',
-                      onTap: () => router.push(const BillingScreen()),
+                      onTap: () async {
+                        final ok = await requireLoggedIn(context);
+                        if (!ok) return;
+                        router.push(const BillingScreen());
+                      },
                       showDivider: false,
                     ),
                   ],
