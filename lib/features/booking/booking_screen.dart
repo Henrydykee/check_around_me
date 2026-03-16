@@ -11,6 +11,7 @@ import '../../core/widget/loader_wrapper.dart';
 import '../../core/widget/error.dart';
 import '../../data/model/booking_list_response.dart';
 import '../../vm/business_provider.dart';
+import 'booking_payment_flow.dart';
 import 'booking_details_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -131,20 +132,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
       final businessId = business.id ?? '';
       if (businessId.isEmpty) return;
 
-      await vm.getBusinessBookingsTrpc(
-        businessId: businessId,
-        // Use same statuses as web for active/provider bookings
-        statuses: const [
-          'pending_provider_acceptance',
-          'accepted',
-          'in_progress',
-          'awaiting_user_confirmation',
-          'completed',
-          'cancelled',
-        ],
-        limitAll: 100,
-        limitFiltered: 50,
-      );
+      await vm.getBusinessBookings(businessId);
     }
   }
 
@@ -681,10 +669,10 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
   }
 
   void _handlePayBookingFee(BuildContext context, BookingModel booking) {
-    // TODO: Implement payment flow
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payment functionality coming soon')),
-    );
+    startBookingPaymentFlow(context, booking).then((success) async {
+      if (!success) return;
+      await _loadBookingsForCurrentTab();
+    });
   }
 
   void _handleCancelBooking(BuildContext context, BookingModel booking) {

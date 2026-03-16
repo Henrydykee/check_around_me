@@ -1,11 +1,13 @@
 import 'package:check_around_me/core/theme/app_theme.dart';
 import 'package:check_around_me/features/booking/booking_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../account/account_screen.dart';
 import '../home/home_screen.dart';
 // import '../messages/messages_screen.dart';
 import '../services/search_screen.dart';
+import '../../vm/auth_provider.dart';
 
 class CheckNavbar extends StatefulWidget {
   final int selectedTab;
@@ -33,29 +35,46 @@ class _CheckNavbarState extends State<CheckNavbar> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: selectedTab,
-        children: [
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        final isLoggedIn = auth.userModel != null;
+
+        final pages = <Widget>[
           HomeScreen(onNavigateToSearchTab: () => _onTabSelected(1)),
           const SearchScreen(),
-          const BookingsScreen(),
-          const AccountScreen(),
-        ],
-      ),
-      bottomNavigationBar: FABBottomAppBar(
-        currentIndex: selectedTab,
-        selectedColor: AppTheme.primary,
-        color: Colors.grey,
-        onTabSelected: _onTabSelected,
-        items: const [
-          FABBottomAppBarItem(iconData: Icons.home_outlined, name: "Home"),
-          FABBottomAppBarItem(iconData: Icons.search_outlined, name: "Search"),
-          FABBottomAppBarItem(iconData: Icons.calendar_month_outlined, name: "Booking"),
-          // FABBottomAppBarItem(iconData: Icons.message_outlined, name: "Messages"),
-          FABBottomAppBarItem(iconData: Icons.person_outline, name: "Account"),
-        ],
-      ),
+          if (isLoggedIn) const BookingsScreen(),
+          if (isLoggedIn) const AccountScreen(),
+        ];
+
+        final items = <FABBottomAppBarItem>[
+          const FABBottomAppBarItem(iconData: Icons.home_outlined, name: "Home"),
+          const FABBottomAppBarItem(iconData: Icons.search_outlined, name: "Search"),
+          if (isLoggedIn)
+            const FABBottomAppBarItem(iconData: Icons.calendar_month_outlined, name: "Booking"),
+          if (isLoggedIn)
+            const FABBottomAppBarItem(iconData: Icons.person_outline, name: "Account"),
+        ];
+
+        // Clamp selectedTab to valid range
+        final maxIndex = pages.length - 1;
+        if (selectedTab > maxIndex) {
+          selectedTab = maxIndex;
+        }
+
+        return Scaffold(
+          body: IndexedStack(
+            index: selectedTab,
+            children: pages,
+          ),
+          bottomNavigationBar: FABBottomAppBar(
+            currentIndex: selectedTab,
+            selectedColor: AppTheme.primary,
+            color: Colors.grey,
+            onTabSelected: _onTabSelected,
+            items: items,
+          ),
+        );
+      },
     );
   }
 }

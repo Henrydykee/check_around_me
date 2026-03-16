@@ -72,69 +72,75 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Consumer<AuthProvider>(
-                            builder: (context, auth, _) {
-                              final name = auth.userModel?.name?.trim();
-                              final greeting = _greeting();
-                              return Text(
-                                name != null && name.isNotEmpty
-                                    ? '$greeting, $name'
-                                    : greeting,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 14,
-                                  color: AppTheme.onSurface,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        Consumer<NotificationProvider>(
-                          builder: (context, notificationVm, _) {
-                            final count = notificationVm.unreadCount;
-                            return IconButton(
-                              onPressed: () => router.push(const NotificationsScreen()),
-                              icon: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  const Icon(
-                                    Icons.notifications_outlined,
-                                    color: AppTheme.onSurface,
-                                    size: 26,
-                                  ),
-                                  if (count > 0)
-                                    Positioned(
-                                      top: -2,
-                                      right: -2,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        constraints: const BoxConstraints(
-                                          minWidth: 16,
-                                          minHeight: 16,
-                                        ),
-                                        child: Text(
-                                          count > 99 ? '99+' : '$count',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                      Expanded(
+                        child: Consumer<AuthProvider>(
+                          builder: (context, auth, _) {
+                            final name = auth.userModel?.name?.trim();
+                            final greeting = _greeting();
+                            return Text(
+                              name != null && name.isNotEmpty
+                                  ? '$greeting, $name'
+                                  : greeting,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                                color: AppTheme.onSurface,
                               ),
                             );
                           },
                         ),
+                      ),
+                      Consumer<AuthProvider>(
+                        builder: (context, auth, _) {
+                          final isLoggedIn = auth.userModel != null;
+                          if (!isLoggedIn) return const SizedBox.shrink();
+                          return Consumer<NotificationProvider>(
+                            builder: (context, notificationVm, __) {
+                              final count = notificationVm.unreadCount;
+                              return IconButton(
+                                onPressed: () => router.push(const NotificationsScreen()),
+                                icon: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    const Icon(
+                                      Icons.notifications_outlined,
+                                      color: AppTheme.onSurface,
+                                      size: 26,
+                                    ),
+                                    if (count > 0)
+                                      Positioned(
+                                        top: -2,
+                                        right: -2,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 16,
+                                            minHeight: 16,
+                                          ),
+                                          child: Text(
+                                            count > 99 ? '99+' : '$count',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
                       ],
                     ),
                   ),

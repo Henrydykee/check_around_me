@@ -169,6 +169,46 @@ class BusinessRepository {
     }
   }
 
+  Future<Either<RequestFailure, Map<String, String>>> createBookingPayment(
+    String bookingId, {
+    String paymentType = 'booking',
+  }) async {
+    try {
+      final response = await _client.post(
+        ApiUrls.createBookingPayment(bookingId),
+        data: {
+          'bookingId': bookingId,
+          'paymentType': paymentType,
+        },
+      );
+
+      final rawData = response.data;
+      final data = rawData is String ? jsonDecode(rawData) : rawData;
+
+      if (data is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid payment response format"));
+      }
+
+      final authorizationUrl = data['authorizationUrl']?.toString();
+      final reference = data['reference']?.toString();
+
+      if (authorizationUrl == null || authorizationUrl.isEmpty) {
+        return Left(RequestFailure("Missing authorization URL from payment response"));
+      }
+
+      final result = <String, String>{
+        'authorizationUrl': authorizationUrl,
+      };
+      if (reference != null && reference.isNotEmpty) {
+        result['reference'] = reference;
+      }
+
+      return Right(result);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
   Future<Either<RequestFailure, ReviewsResponse>> getBusinessReviews(String businessId) async {
     try {
       final response = await _client.get(ApiUrls.getBusinessReviews(businessId));
@@ -227,6 +267,53 @@ class BusinessRepository {
       }
       
       final result = BookingListResponse.fromJson(data);
+      return Right(result);
+    } catch (e) {
+      return Left(RequestFailure(e.toString()));
+    }
+  }
+
+  Future<Either<RequestFailure, BookingListResponse>> getBusinessBookings(
+    String businessId,
+  ) async {
+    try {
+      final response = await _client.get(ApiUrls.listBusinessBookings(businessId));
+      final rawData = response.data;
+      final data = rawData is String ? jsonDecode(rawData) : rawData;
+
+      if (data is! Map<String, dynamic>) {
+        return Left(RequestFailure("Invalid business bookings response format"));
+      }
+
+      final bookingsJson = data['bookings'];
+      final total = data['total'];
+
+      final bookings = <BookingModel>[];
+      if (bookingsJson is List) {
+        for (final item in bookingsJson) {
+          if (item is Map<String, dynamic>) {
+            bookings.add(
+              BookingModel(
+                id: item['id']?.toString(),
+                businessId: item['businessId']?.toString(),
+                userId: item['userId']?.toString(),
+                status: item['status']?.toString(),
+                // Map bookingDate -> scheduledAt so UI date formatting continues to work
+                scheduledAt: item['bookingDate']?.toString(),
+                createdAt: item['createdAt']?.toString(),
+                // serviceId could be wired to serviceName later if backend provides it
+                // serviceName: item['serviceId']?.toString(),
+              ),
+            );
+          }
+        }
+      }
+
+      final result = BookingListResponse(
+        bookings: bookings,
+        total: total is int ? total : int.tryParse(total?.toString() ?? ''),
+      );
+
       return Right(result);
     } catch (e) {
       return Left(RequestFailure(e.toString()));

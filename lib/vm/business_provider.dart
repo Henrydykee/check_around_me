@@ -140,6 +140,28 @@ class BusinessProvider extends ChangeNotifier {
     );
   }
 
+  Future<void> getBusinessBookings(String businessId) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    final result = await _repository.getBusinessBookings(businessId);
+
+    result.fold(
+      (failure) {
+        error = failure;
+        isLoading = false;
+        notifyListeners();
+      },
+      (success) {
+        bookingList = success.bookings ?? [];
+        totalBookings = success.total;
+        isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
   Future<void> getBusinessBookingsTrpc({
     required String businessId,
     List<String>? statuses,
@@ -297,6 +319,10 @@ class BusinessProvider extends ChangeNotifier {
         debugPrint("My businesses loaded successfully");
         debugPrint(success.toString());
         myBusinesses = success;
+        if (myBusinesses.isEmpty) {
+          bookingList = [];
+          totalBookings = 0;
+        }
         isLoading = false;
         notifyListeners();
       },

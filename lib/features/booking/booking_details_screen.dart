@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'booking_chat_screen.dart';
 import '../../vm/auth_provider.dart';
 import '../../vm/business_provider.dart';
+import 'booking_payment_flow.dart';
 
 class BookingDetailsScreen extends StatelessWidget {
   final BookingModel booking;
@@ -289,9 +290,11 @@ class BookingDetailsScreen extends StatelessWidget {
                     height: 52,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Payment functionality coming soon')),
-                        );
+                        startBookingPaymentFlow(context, booking).then((success) {
+                          if (success) {
+                            router.pop(true);
+                          }
+                        });
                       },
                       icon: const Icon(Icons.payment, size: 20, color: Colors.white),
                       label: const Text('Pay booking fee'),
